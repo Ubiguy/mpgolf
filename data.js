@@ -1,4 +1,4 @@
-// feed rows: 77
+// feed rows: 78
 /* ============================================================
    Golf Society 2026 — all data for every page lives here.
    Edit this file after a round; the pages recalculate themselves.
@@ -189,7 +189,8 @@ const MATCHES = [
   {date:'2026-09-27',aPlayer:'Moody',aSubFor:null,aPts:13,bPlayer:'Tariq',bSubFor:null,bPts:13},
   {date:'2026-09-27',aPlayer:'Imran',aSubFor:null,aPts:12,bPlayer:'Sid',bSubFor:null,bPts:9},
   {date:'2026-09-30',aPlayer:'Mansoor',aSubFor:null,aPts:20,bPlayer:'Tariq',bSubFor:null,bPts:18},
-  {date:'2026-10-02',aPlayer:'Imran',aSubFor:null,aPts:16,bPlayer:'Sam',bSubFor:null,bPts:14}
+  {date:'2026-10-02',aPlayer:'Imran',aSubFor:null,aPts:16,bPlayer:'Sam',bSubFor:null,bPts:14},
+  {date:'2026-10-03',aPlayer:'Amriaz',aSubFor:null,aPts:18,bPlayer:'Sid',bSubFor:null,bPts:20}
 ];
 
 /* The published 10-week round robin. A match may be played ahead of
