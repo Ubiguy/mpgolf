@@ -1,4 +1,4 @@
-// feed rows: 80
+// feed rows: 81
 /* ============================================================
    Golf Society 2026 — all data for every page lives here.
    Edit this file after a round; the pages recalculate themselves.
