@@ -60,8 +60,8 @@ COMP_HANDICAP = {
 # Fixtures that are known in advance to need a stand-in, so the fixture list
 # can say so rather than showing them as ordinary matches still to play.
 # Moody does not play Sam or Raz, so both of those fixtures will be covered by
-# a substitute. Rule 4 caps a player at being substituted twice, and these two
-# are exactly that allowance - there is no margin left for other absences.
+# a substitute. Rule 4 once capped this at two; since 08/10/2026 there is no
+# limit on stand-ins.
 SUB_REQUIRED = {
     ("Moody", "Raz"): "Moody does not play Raz",
     ("Moody", "Sam"): "Moody does not play Sam",

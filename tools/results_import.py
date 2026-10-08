@@ -34,8 +34,8 @@ in the fixture list.
 WHAT THIS REFUSES. A pairing that is not in the schedule, an unknown name, a
 substitute from the wrong team or standing in for themselves, a score outside
 0-27, which is what 9 holes of Stableford can produce. Those are reported and the row is dropped rather than published. Rule
-4's limit of two stand-ins per player is reported but NOT enforced - it is the
-captains' call, and the site already shows where it bites.
+4 no longer limits how many times a player may stand in (exception agreed
+08/10/2026), so stand-in counts are neither reported nor enforced.
 """
 import csv, io, os, re, sys, time, urllib.error, urllib.request
 from datetime import date, datetime, time as dt_time, timedelta
@@ -482,11 +482,6 @@ def resolve(rows):
     if skipped_old:
         notes.append('%d submission(s) from before %s passed over - they belong '
                      'to an earlier season' % (skipped_old, season.STARTS))
-
-    for who, n in sorted(subs_used.items()):
-        if n > 2:
-            notes.append('%s has stood in %d times - rule 4 allows 2, captains to confirm'
-                         % (who, n))
 
     ms = sorted(state.values(), key=lambda m: (m['date'], m['week']))
     for m in ms:
