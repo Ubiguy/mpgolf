@@ -1,4 +1,4 @@
-// feed rows: 87
+// feed rows: 88
 /* ============================================================
    Golf Society 2026 — all data for every page lives here.
    Edit this file after a round; the pages recalculate themselves.
@@ -198,6 +198,7 @@ const MATCHES = [
   {date:'2026-10-09',aPlayer:'Amriaz',aSubFor:null,aPts:12,bPlayer:'Sam',bSubFor:null,bPts:14},
   {date:'2026-10-11',aPlayer:'Imran',aSubFor:null,aPts:16,bPlayer:'Tariq',bSubFor:null,bPts:17},
   {date:'2026-10-12',aPlayer:'Nav',aSubFor:null,aPts:10,bPlayer:'Haaris',bSubFor:null,bPts:10},
+  {date:'2026-10-14',aPlayer:'Yaseen (C)',aSubFor:null,aPts:13,bPlayer:'Raz',bSubFor:null,bPts:12},
   {date:'2026-10-14',aPlayer:'Yaseen (C)',aSubFor:null,aPts:13,bPlayer:'Sid',bSubFor:null,bPts:10}
 ];
 
