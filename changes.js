@@ -1,6 +1,7 @@
 // Written by score_log.py - every entry of score-log.csv, newest first.
 // That CSV is the record; this is only what the pages read.
 const CHANGES = [
+  {when:'2026-11-05T03:46:37Z',results:81,a:42,b:61,items:['no change']},
   {when:'2026-11-04T03:02:25Z',results:81,a:42,b:61,items:['no change']},
   {when:'2026-11-03T02:37:14Z',results:81,a:42,b:61,items:['no change']},
   {when:'2026-11-02T02:36:31Z',results:81,a:42,b:61,items:['no change']},
