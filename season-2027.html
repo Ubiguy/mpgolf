@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2027 season</title>
+<meta name="description" content="Mates Playing Golf 2027 season: tournaments and results, starting with the Winter Tournament.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=f9aa6899">
+<link rel="icon" href="favicon-32.png?v=7d5e942c" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-16.png?v=1fc5ad18" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20639bb8">
+<style>
+  .tour{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--border);
+    border-left:3px solid #1D528F;border-radius:4px;padding:16px 18px;}
+  .tour:hover{border-color:var(--ink-2);}
+  .tour h3{margin:0 0 4px;font-size:1.15rem;}
+  .tour p{margin:0;font-size:.9rem;color:var(--ink-2);}
+  .tour .go{display:inline-block;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;
+    letter-spacing:.08em;text-transform:uppercase;color:#1D528F;font-weight:600;}
+  @media print{.sitenav{display:none;} *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="sitenav">
+    <a href="index.html">Home</a>
+    <a href="season-2027.html" aria-current="page">2027 season</a>
+    <a href="season.html">2026 season</a>
+    <a href="matchplay.html">Team match play</a>
+    <a href="strokeplay2026.html">Strokeplay Singles</a>
+    <a href="live.html">Live scores</a>
+    <a href="2025season.html">2025 season</a>
+    <a href="awaygames.html">Away games</a>
+    <a href="handicaps.html">Handicaps</a>
+    <a href="profiles.html">Player profiles</a>
+    <a class="back" target="_top" href="https://sites.google.com/view/mpgolf">&larr; Mates Playing Golf</a>
+  </nav>
+
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">Mates Playing Golf &middot; 2027 season</div>
+      <h1>2027 season</h1>
+    </div>
+    <div class="stamp" id="stamp"></div>
+  </header>
+
+  <section>
+    <div class="head">
+      <div class="head-l">
+        <h2>Tournaments</h2>
+        <span class="chip live" id="chip">Live</span>
+      </div>
+      <p>More events are added here as the season is announced.</p>
+    </div>
+    <a class="tour" href="winter-2027.html">
+      <h3>Winter tournament</h3>
+      <p id="wSum">Seven Sundays at Wike Ridge. Best 6 Stableford scores win.</p>
+      <span class="go">Open the status report &rarr;</span>
+    </a>
+  </section>
+
+  <footer>
+    <div><b>Source.</b> Winter figures come from <code>data-winter-2027.js</code>, the same file the report reads.</div>
+  </footer>
+</div>
+<script src="data-winter-2027.js?v=6dd248bb"></script>
+<script>
+(function(){
+  const W = WINTER_2027, n = W.rounds.length, T = W.dates.length;
+  const tot = {};
+  W.rounds.forEach(r => r.rows.forEach(([p,,v]) => (tot[p] = tot[p] || []).push(v)));
+  const best = Object.entries(tot).map(([p,a]) => [p, a.sort((x,y) => y-x).slice(0, W.countBest).reduce((s,x) => s+x, 0)]);
+  const top = Math.max(...best.map(b => b[1])), who = best.filter(b => b[1] === top).map(b => b[0]);
+  document.getElementById('wSum').textContent =
+    `Seven Sundays at Wike Ridge, ${W.dates[0]} to ${W.dates[T-1]}. Best ${W.countBest} Stableford scores win. ` +
+    `${n} of ${T} played: ${who.join(' and ')} ${who.length > 1 ? 'share the lead' : 'leads'} on ${top}.`;
+  document.getElementById('stamp').innerHTML = `${n} of ${T} winter rounds played<br>${W.dates[0]} to ${W.dates[T-1]}`;
+  if (n === T) { const c = document.getElementById('chip'); c.textContent = 'Final'; c.className = 'chip done'; }
+})();
+</script>
+</body>
+</html>
