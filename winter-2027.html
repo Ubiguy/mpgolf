@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Winter Tournament 2027 season</title>
+<meta name="description" content="Mates Playing Golf Winter Tournament: seven Sundays at Wike Ridge, 15/11/2026 to 27/12/2026. Best 6 Stableford scores win.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css?v=f9aa6899">
+<link rel="icon" href="favicon-32.png?v=7d5e942c" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-16.png?v=1fc5ad18" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=20639bb8">
+<style>
+  /* Winter report: consultant-style status report. No animation anywhere,
+     so the page prints exactly as it looks on screen. */
+  :root{
+    --b1:#E3ECF7; --b2:#BBD1EE; --b3:#86AEDF; --b4:#4C82C4; --b5:#1D528F;
+    --b-ink-dark:#0E2A4A; --drop:#E4E1DB; --drop-ink:#8A847B;
+  }
+  .wr *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .wr{display:flex;flex-direction:column;gap:34px;}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:.68rem;font-weight:500;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);font-variant:small-caps;}
+  .wr h1{margin:6px 0 8px;font-family:'Archivo',sans-serif;font-size:clamp(2rem,8vw,3.1rem);
+    font-weight:800;letter-spacing:-.03em;line-height:1.02;}
+  .lead{margin:0;font-size:1.05rem;color:var(--ink-2);max-width:62ch;}
+  .top{border-bottom:2px solid var(--ink);padding-bottom:18px;display:flex;flex-direction:column;gap:16px;}
+
+  /* progress strip */
+  .prog{display:flex;flex-direction:column;gap:6px;}
+  .prog .dots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .prog .dots span{height:10px;border-radius:2px;background:var(--surface-sunk);border:1px solid var(--border);}
+  .prog .dots span.on{background:var(--b5);border-color:var(--b5);}
+  .prog .lbl{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;
+    font-size:.7rem;color:var(--muted);gap:8px;}
+  .prog .lbl b{color:var(--ink);font-weight:600;}
+
+  /* executive summary */
+  .exec{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--b5);
+    border-radius:4px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:16px;}
+  .exec h2,.ex h2{margin:0;font-size:1.12rem;font-weight:700;letter-spacing:-.015em;}
+  .exec ol{margin:0;padding:0;list-style:none;counter-reset:t;display:flex;flex-direction:column;gap:10px;}
+  .exec li{counter-increment:t;display:grid;grid-template-columns:28px 1fr;gap:8px;font-size:.98rem;line-height:1.4;}
+  .exec li::before{content:counter(t);font-family:'Archivo',sans-serif;font-weight:800;color:#fff;
+    background:var(--b5);width:24px;height:24px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-size:.8rem;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);
+    border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+  @media (max-width:620px){.kpis{grid-template-columns:repeat(2,1fr);}}
+  .kpi{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .kpi .k{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .kpi .v{font-family:'Archivo',sans-serif;font-size:1.9rem;font-weight:800;line-height:1.1;
+    font-variant-numeric:tabular-nums;color:var(--b5);}
+  .kpi .s{font-size:.8rem;color:var(--muted);overflow-wrap:anywhere;}
+
+  /* exhibits */
+  .ex{display:flex;flex-direction:column;gap:12px;}
+  .ex .tag{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--b5);font-weight:600;}
+  .ex .so{margin:0;font-size:.9rem;color:var(--ink-2);}
+  .ex .src{margin:0;font-size:.76rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+
+  /* Exhibit 1 matrix */
+  .mx-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:4px;background:var(--surface);}
+  table.mx{font-size:.86rem;min-width:520px;}
+  table.mx th,table.mx td{padding:6px 6px;text-align:center;}
+  table.mx th.nm,table.mx td.nm{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1;
+    min-width:118px;white-space:normal;line-height:1.2;}
+  table.mx td.c{font-weight:600;font-variant-numeric:tabular-nums;border:2px solid var(--surface);}
+  table.mx td.c1{background:var(--b1);color:var(--b-ink-dark);}
+  table.mx td.c2{background:var(--b2);color:var(--b-ink-dark);}
+  table.mx td.c3{background:var(--b3);color:var(--b-ink-dark);}
+  table.mx td.c4{background:var(--b4);color:#fff;}
+  table.mx td.c5{background:var(--b5);color:#fff;}
+  table.mx td.dr{background:var(--drop);color:var(--drop-ink);text-decoration:line-through;}
+  table.mx td.na{color:var(--muted);}
+  table.mx td.fut{background:repeating-linear-gradient(135deg,transparent 0 5px,var(--hairline) 5px 6px);}
+  table.mx td.tot{font-family:'Archivo',sans-serif;font-weight:800;font-size:1rem;}
+  table.mx td.pos{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  table.mx tr.lead1 td.nm,table.mx tr.lead1 td.tot{color:var(--b5);}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:.76rem;color:var(--muted);align-items:center;}
+  .legend i{display:inline-block;width:14px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:4px;}
+
+  /* Exhibit 2 outlook */
+  .ol{display:flex;flex-direction:column;gap:7px;}
+  .ol .row{display:grid;grid-template-columns:minmax(92px,150px) 1fr 74px;gap:8px;align-items:center;font-size:.86rem;}
+  .ol .nm{font-weight:600;line-height:1.15;}
+  .ol .bar{position:relative;height:16px;background:var(--surface-sunk);border-radius:2px;overflow:hidden;}
+  .ol .bar .bk{position:absolute;left:0;top:0;bottom:0;background:var(--b5);}
+  .ol .bar .pj{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,var(--b2) 0 4px,var(--b3) 4px 7px);}
+  .ol .n{font-variant-numeric:tabular-nums;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.78rem;}
+  .ol .n b{font-family:'Archivo',sans-serif;font-size:.92rem;}
+
+  /* Exhibit 3 */
+  .chart{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:8px;}
+  .chart svg{display:block;width:100%;height:auto;}
+  .chart text{font-family:'IBM Plex Mono',monospace;fill:var(--muted);}
+  .chart .wl{fill:var(--ink);font-weight:600;}
+  table.wn td,table.wn th{padding:6px 6px;}
+  table.wn td.nm{white-space:normal;}
+
+  .method{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--b5);
+    border-radius:4px;padding:14px 16px;font-size:.94rem;line-height:1.5;display:flex;flex-direction:column;gap:10px;}
+  .method p{margin:0;}
+  .method blockquote{margin:0;padding:8px 12px;background:var(--b1);color:var(--b-ink-dark);border-radius:3px;font-style:italic;}
+
+  /* ---------- print / PDF: exactly as on screen ---------- */
+  @page{size:A4;margin:12mm 11mm;}
+  @media print{
+    :root,:root:not([data-theme="light"]),:root[data-theme="dark"]{
+      --ground:#FFFFFF;--surface:#FFFFFF;--surface-sunk:#E7E4DD;--border:#DCD6CB;--hairline:#E8E4DB;
+      --ink:#1C1917;--ink-2:#4A443C;--muted:#6E675E;
+    }
+    html,body{background:#fff !important;}
+    *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;
+      opacity:1 !important;animation:none !important;transition:none !important;}
+    .sitenav{display:none !important;}
+    .page{padding:0;max-width:none;gap:18px;}
+    .wr{gap:16px;}
+    .ex.brk{break-before:page;page-break-before:always;}
+    .ex,.exec,.method,table,.chart{break-inside:avoid;page-break-inside:avoid;}
+    .mx-wrap{overflow:visible;}
+    table.mx{min-width:0;font-size:.8rem;}
+    table.mx th.nm,table.mx td.nm{position:static;}
+    .kpis{grid-template-columns:repeat(4,1fr);}
+    .wr h1{font-size:2.4rem;}
+    footer{break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="sitenav">
+    <a href="index.html">Home</a>
+    <a href="season-2027.html" aria-current="page">2027 season</a>
+    <a href="season.html">2026 season</a>
+    <a href="matchplay.html">Team match play</a>
+    <a href="strokeplay2026.html">Strokeplay Singles</a>
+    <a href="live.html">Live scores</a>
+    <a href="2025season.html">2025 season</a>
+    <a href="awaygames.html">Away games</a>
+    <a href="handicaps.html">Handicaps</a>
+    <a href="profiles.html">Player profiles</a>
+    <a class="back" target="_top" href="https://sites.google.com/view/mpgolf">&larr; Mates Playing Golf</a>
+  </nav>
+
+  <main class="wr">
+    <header class="top">
+      <div>
+        <div class="kicker" id="kicker">Mates Playing Golf &middot; 2027 season &middot; Status report</div>
+        <h1>Winter Tournament</h1>
+        <p class="lead" id="lead"></p>
+      </div>
+      <div class="prog" aria-label="Rounds played">
+        <div class="dots" id="dots"></div>
+        <div class="lbl"><span id="pFirst"></span><b id="pMid"></b><span id="pLast"></span></div>
+      </div>
+    </header>
+
+    <section class="exec" aria-labelledby="execH">
+      <h2 id="execH">Executive summary</h2>
+      <ol id="take"></ol>
+      <div class="kpis" id="kpis"></div>
+    </section>
+
+    <section class="ex" aria-labelledby="e1">
+      <span class="tag">Exhibit 1</span>
+      <h2 id="e1">Standings: points by round</h2>
+      <p class="so" id="e1so"></p>
+      <div class="mx-wrap"><table class="mx" id="matrix"></table></div>
+      <div class="legend" id="legend"></div>
+      <p class="src">Source: Golf GameBook scorecards, Stableford net points off handicap.</p>
+    </section>
+
+    <section class="ex brk" aria-labelledby="e2">
+      <span class="tag">Exhibit 2</span>
+      <h2 id="e2">Outlook: banked versus projected</h2>
+      <p class="so" id="e2so"></p>
+      <div class="ol" id="outlook"></div>
+      <div class="legend">
+        <span><i style="background:var(--b5)"></i>Banked: best-6 total so far</span>
+        <span><i style="background:repeating-linear-gradient(135deg,var(--b2) 0 4px,var(--b3) 4px 7px)"></i>Projected: average so far &times; rounds that can still count</span>
+      </div>
+      <p class="src">A projection, not a prediction: it assumes each player keeps scoring at their current average and plays every remaining Sunday.</p>
+    </section>
+
+    <section class="ex brk" aria-labelledby="e3">
+      <span class="tag">Exhibit 3</span>
+      <h2 id="e3">Round by round</h2>
+      <p class="so" id="e3so"></p>
+      <div class="chart" id="chart"></div>
+      <div class="t-scroll"><table class="wn" id="winners"></table></div>
+    </section>
+
+    <section class="ex brk" aria-labelledby="e4">
+      <span class="tag">Exhibit 4</span>
+      <h2 id="e4">Method</h2>
+      <div class="method" id="method">
+        <p><b>The champion rule, in the organiser's words:</b></p>
+        <blockquote>&ldquo;Person with highest cumulative stableford points over six or less games wins at end of comp. Add this so best 6 max stableford scores determine champ.&rdquo;</blockquote>
+        <p id="mRule"></p>
+        <p><b>Points.</b> Stableford points as recorded in Golf GameBook: net, off each player's handicap on the day. Higher is better throughout this report.</p>
+        <p><b>Ties.</b> Players level on total share the place, shown with a T (T2, T2, then 4).</p>
+        <p id="mWhere"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div><b>Source.</b> Every figure on this page is calculated from one file, <code>data-winter-2027.js</code>. Nothing is typed into the page by hand.</div>
+    <div><b>More.</b> The rest of the 2027 season is on the <a href="season-2027.html">2027 season</a> page.</div>
+  </footer>
+</div>
+
+<script src="data-winter-2027.js"></script>
+<script>
+(function(){
+  const W = WINTER_2027, BEST = W.countBest, TOTAL = W.dates.length;
+  const rounds = W.rounds, played = rounds.length, left = TOTAL - played;
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const dm = d => d.slice(0,5);                       // DD/MM from DD/MM/YYYY
+  const sum = a => a.reduce((s,x) => s + x, 0);
+  const list = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' and ' + a[a.length-1];
+
+  /* ---------- players ---------- */
+  const P = {};
+  rounds.forEach((r, i) => r.rows.forEach(([name, hcp, pts]) => {
+    const p = P[name] || (P[name] = {name, by: Array(TOTAL).fill(null), hcp: {}});
+    p.by[i] = pts; p.hcp[i] = hcp;
+  }));
+  const players = Object.values(P).map(p => {
+    const sc = p.by.map((v,i) => ({v,i})).filter(x => x.v !== null);
+    // best BEST count; anything beyond is dropped (the lowest; if level, the latest)
+    const ord = sc.slice().sort((a,b) => b.v - a.v || a.i - b.i);
+    const keep = ord.slice(0, BEST), drop = new Set(ord.slice(BEST).map(x => x.i));
+    const total = sum(keep.map(x => x.v));
+    const avg = sc.length ? sum(sc.map(x => x.v)) / sc.length : 0;
+    const canCount = Math.min(BEST, sc.length + left);
+    const proj = Math.max(total, Math.round(avg * canCount));
+    return Object.assign(p, {n: sc.length, total, drop, avg, canCount, proj,
+      best: Math.max(...sc.map(x => x.v))});
+  }).sort((a,b) => b.total - a.total || a.name.localeCompare(b.name));
+  players.forEach(p => {
+    p.pos = 1 + players.filter(q => q.total > p.total).length;
+    p.tie = players.filter(q => q.total === p.total).length > 1;
+    p.posTxt = (p.tie ? 'T' : '') + p.pos;
+  });
+
+  /* ---------- header ---------- */
+  const final = left === 0;
+  $('kicker').innerHTML = `Mates Playing Golf &middot; 2027 season &middot; ` +
+    (final ? 'Final report' : `Status report after round ${played}`);
+  $('lead').textContent = `Seven Sundays at ${W.course}, ${W.dates[0]} to ${W.dates[TOTAL-1]}. ` +
+    `The champion is the player with the highest total from their best ${BEST} Stableford scores.`;
+  $('dots').innerHTML = W.dates.map((d,i) => `<span class="${i < played ? 'on' : ''}" title="${d}"></span>`).join('');
+  $('pFirst').textContent = dm(W.dates[0]);
+  $('pMid').textContent = `${played} of ${TOTAL} played`;
+  $('pLast').textContent = dm(W.dates[TOTAL-1]);
+
+  /* ---------- executive summary ---------- */
+  const lead = players[0], leaders = players.filter(p => p.pos === 1);
+  const chasers = players.filter(p => p.pos === 1 + leaders.length);
+  const gap = leaders.length > 1 ? 0 : lead.total - (chasers[0] ? chasers[0].total : 0);
+  let top = {v:-1};
+  rounds.forEach((r,i) => r.rows.forEach(([n,,v]) => { if (v > top.v) top = {v, i, who:[n]}; else if (v === top.v) top.who.push(n); }));
+  const reach = players.filter(p => p.n + left >= BEST).length;
+  const t1 = leaders.length > 1
+    ? `<b>${esc(list(leaders.map(p => p.name)))}</b> share the lead on <b>${lead.total}</b> points.`
+    : `<b>${esc(lead.name)}</b> leads on <b>${lead.total}</b> points, ${gap} clear of ${esc(list(chasers.map(p => p.name)))}${chasers.length > 1 ? ' (joint second)' : ''}.`;
+  const t2 = `Best single round so far: <b>${top.v}</b> points by ${esc(list(top.who))} on ${rounds[top.i].date}.`;
+  const t3 = final
+    ? `The tournament is complete: ${players.length} players took part and each player's lowest round beyond ${BEST} has been dropped.`
+    : `${left} ${left === 1 ? 'Sunday' : 'Sundays'} to go; ${reach} of ${players.length} players can still reach ${BEST} counting scores. Decided ${W.dates[TOTAL-1]}.`;
+  $('take').innerHTML = [t1,t2,t3].map(t => `<li><span>${t}</span></li>`).join('');
+  const kpi = (k,v,s) => `<div class="kpi"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${s}</span></div>`;
+  $('kpis').innerHTML =
+    kpi("Leader's points", lead.total, esc(list(leaders.map(p => p.name)))) +
+    kpi('Gap 1st to 2nd', gap, leaders.length > 1 ? 'Level at the top' : 'points to ' + esc(list(chasers.map(p => p.name)))) +
+    kpi('Best single round', top.v, esc(list(top.who)) + ', ' + rounds[top.i].date) +
+    kpi('Players', players.length, `${sum(rounds.map(r => r.rows.length))} cards in ${played} ${played === 1 ? 'round' : 'rounds'}`);
+
+  /* ---------- Exhibit 1 ---------- */
+  const shade = v => v >= 36 ? 'c5' : v >= 32 ? 'c4' : v >= 28 ? 'c3' : v >= 24 ? 'c2' : 'c1';
+  $('e1so').textContent = leaders.length > 1
+    ? `${list(leaders.map(p => p.name))} are level on ${lead.total} after ${played} of ${TOTAL} rounds.`
+    : `${lead.name} is top on ${lead.total} after ${played} of ${TOTAL} rounds; darker blue means more points.`;
+  $('matrix').innerHTML =
+    `<thead><tr><th class="nm">Player</th>` +
+    W.dates.map((d,i) => `<th title="${d}">R${i+1}<br>${dm(d)}</th>`).join('') +
+    `<th>Best ${BEST}</th><th>Pos</th></tr></thead><tbody>` +
+    players.map(p => `<tr class="${p.pos === 1 ? 'lead1' : ''}"><td class="nm">${esc(p.name)}</td>` +
+      p.by.map((v,i) => i >= played ? `<td class="fut"></td>`
+        : v === null ? `<td class="na">&ndash;</td>`
+        : `<td class="c ${p.drop.has(i) ? 'dr' : shade(v)}">${v}</td>`).join('') +
+      `<td class="tot">${p.total}</td><td class="pos">${p.posTxt}</td></tr>`).join('') + `</tbody>`;
+  $('legend').innerHTML = [['c1','under 24'],['c2','24-27'],['c3','28-31'],['c4','32-35'],['c5','36+']]
+    .map(([c,t]) => `<span><i style="background:var(--b${c[1]})"></i>${t}</span>`).join('') +
+    `<span><i style="background:var(--drop)"></i>dropped (outside best ${BEST})</span>` +
+    `<span><i style="background:repeating-linear-gradient(135deg,transparent 0 5px,var(--border) 5px 6px)"></i>still to play</span>` +
+    `<span>&ndash; did not play</span>`;
+
+  /* ---------- Exhibit 2 ---------- */
+  const maxP = Math.max(...players.map(p => p.proj));
+  const pl = players.slice().sort((a,b) => b.proj - a.proj || b.total - a.total || a.name.localeCompare(b.name));
+  $('e2so').textContent = final
+    ? 'All rounds are in: banked totals are final.'
+    : `On current form ${pl[0].name} projects highest, to about ${pl[0].proj} points.`;
+  $('outlook').innerHTML = pl.map(p => `<div class="row">
+      <span class="nm">${esc(p.name)}</span>
+      <span class="bar" title="${p.total} banked, ${p.proj} projected">
+        <span class="pj" style="left:${p.total/maxP*100}%;width:${(p.proj-p.total)/maxP*100}%"></span>
+        <span class="bk" style="width:${p.total/maxP*100}%"></span></span>
+      <span class="n"><b>${p.total}</b> &rarr; ${p.proj}</span></div>`).join('');
+
+  /* ---------- Exhibit 3 ---------- */
+  const all = rounds.flatMap(r => r.rows.map(x => x[2]));
+  const lo = Math.floor((Math.min(...all) - 2) / 5) * 5, hi = Math.ceil((Math.max(...all) + 2) / 5) * 5;
+  const Wd = 640, L = 64, R = 20, T = 18, RH = 36, H = T + RH * TOTAL + 26;
+  const x = v => L + (v - lo) / (hi - lo) * (Wd - L - R);
+  let s = `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Points scored by every player in each round">`;
+  for (let v = lo; v <= hi; v += 5)
+    s += `<line x1="${x(v)}" x2="${x(v)}" y1="${T-6}" y2="${H-22}" stroke="var(--hairline)"/>` +
+         `<text x="${x(v)}" y="${H-6}" font-size="11" text-anchor="middle">${v}</text>`;
+  W.dates.forEach((d,i) => {
+    const y = T + RH * i + RH/2;
+    s += `<text x="4" y="${y+4}" font-size="11">R${i+1} ${dm(d)}</text>`;
+    const r = rounds[i];
+    if (!r) { s += `<text x="${x(lo)+6}" y="${y+4}" font-size="11" font-style="italic">to play</text>`; return; }
+    const win = Math.max(...r.rows.map(z => z[2])), seen = {};
+    r.rows.slice().sort((a,b) => a[2] - b[2]).forEach(([n,,v]) => {
+      const k = seen[v] = (seen[v] || 0) + 1, dy = (k % 2 ? 1 : -1) * Math.floor(k/2) * 7;
+      s += `<circle cx="${x(v)}" cy="${y+dy}" r="5.5" fill="${v === win ? 'var(--b5)' : 'var(--b3)'}" stroke="var(--surface)" stroke-width="1.2"><title>${esc(n)} ${v}</title></circle>`;
+    });
+    const av = sum(r.rows.map(z => z[2])) / r.rows.length;
+    s += `<line x1="${x(av)}" x2="${x(av)}" y1="${y-12}" y2="${y+12}" stroke="var(--ink)" stroke-width="2"/>`;
+    const wn = r.rows.filter(z => z[2] === win).map(z => z[0].split(' ')[0]);
+    s += `<text class="wl" x="${Math.min(x(win)+9, Wd-R)}" y="${y-8}" font-size="11" text-anchor="${x(win) > Wd-150 ? 'end' : 'start'}">${esc(wn.join(', '))} ${win}</text>`;
+  });
+  $('chart').innerHTML = s + `</svg><div class="legend" style="padding:4px 6px 2px"><span><i style="background:var(--b5);border-radius:50%"></i>round winner</span><span><i style="background:var(--b3);border-radius:50%"></i>other players</span><span><i style="background:var(--ink);width:3px"></i>field average</span></div>`;
+  const sc = rounds.map(r => r.rows.map(z => z[2]));
+  $('e3so').textContent = `${played} ${played === 1 ? 'round' : 'rounds'} played; fields of ${list(sc.map(a => a.length).map(String))} players.`;
+  $('winners').innerHTML = `<thead><tr><th class="rk">Rd</th><th style="text-align:left">Date</th><th class="nm">Winner</th><th>Points</th><th>Field</th><th>Average</th></tr></thead><tbody>` +
+    W.dates.map((d,i) => {
+      const r = rounds[i];
+      if (!r) return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td><td class="nm pending" colspan="4">to play</td></tr>`;
+      const win = Math.max(...sc[i]);
+      return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td>` +
+        `<td class="nm">${esc(list(r.rows.filter(z => z[2] === win).map(z => z[0])))}</td>` +
+        `<td class="key">${win}</td><td>${sc[i].length}</td><td>${(sum(sc[i])/sc[i].length).toFixed(1)}</td></tr>`;
+    }).join('') + `</tbody>`;
+
+  /* ---------- Exhibit 4 ---------- */
+  $('mRule').innerHTML = `<b>How that is applied.</b> A player's total is the sum of their best ${BEST} round scores. ` +
+    `Anyone who plays ${BEST} rounds or fewer counts all of them. Anyone who plays all ${TOTAL} has their lowest score dropped ` +
+    `(shown grey in Exhibit 1). The winner is decided after the last round on ${W.dates[TOTAL-1]}.`;
+  $('mWhere').innerHTML = `<b>Rounds.</b> ${TOTAL} Sundays: ${W.dates.join(', ')}.`;
+})();
+</script>
+</body>
+</html>
