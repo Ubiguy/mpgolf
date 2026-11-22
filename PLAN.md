@@ -31,8 +31,11 @@ Merging this branch to `main` publishes it. That step is the owner's.
    shows **"Basharat Ali"**. Yes / change to "Basharat2 Ali"?
 2. **What changed panel.** `changes.js` is rebuilt from `score-log.csv` by the Action, so a hand-written note
    there would be wiped. Proposed: no entry there; the new page is announced by its nav link. Yes / no?
-3. **Outlook projection.** Exhibit 2 projects each player's best-6 total as
-   "average per round so far × 6" (only for players who can still reach 6 rounds). Yes / other rule?
+3. **Outlook.** ANSWERED by the owner (22/11/2026): he wanted a fun predictor using past data, so
+   Exhibit 2 is now a "crystal ball" (form = winter average blended with the 2025 Stableford Series
+   standing, weight 2 rounds; 5,000 seeded run-throughs of the remaining Sundays, everyone plays,
+   swing 5 points; best-6 rule; chance of being champion). Labelled "Just for fun ... no bets".
+Answers 1 and 2: yes (ax, 22/11/2026). PDF: owner dropped it ("I dont need pdf if web site is working").
 
 ## Check table (re-added by hand from the data)
 Round 1, 15/11/2026: Tariq 37, Sid 34, Imran 33, Raz 32, Mahmood 25, Shufqat 22.
@@ -58,8 +61,7 @@ KPIs: leader 61 (Sid Amin); gap 1st to 2nd = 61 − 60 = 1; best single round 37
 players 12. Round winners: R1 Tariq Javaid 37, R2 Guftar Hussain 31. No round dropped yet (2 of 7 played).
 
 ## Status
-- [ ] Stage 1 PLAN.md pushed
-- [ ] Stage 2 data + page
-- [ ] Stage 3 nav + season hub + tool
-- [ ] Stage 4 screenshots + PDF
-- [ ] Stage 5 checker → CHECK-WINTER-2027.md
+- [x] PLAN.md pushed; data + page + nav + season hub + add-round tool + stamp pushed
+- [x] Owner merged PR #1 at 21:28 on 22/11/2026; live page checked (0 console errors)
+- [x] Screenshots 360 + 1280 px for all 11 changed pages in docs-winter-2027/; 0 console errors on all 11
+- [ ] Independent checker -> CHECK-WINTER-2027.md (branch claude/winter-2027-check)
