@@ -90,7 +90,7 @@
   .ol .pn{color:var(--muted);}
   .ol .n{font-variant-numeric:tabular-nums;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.78rem;}
   .ol .n b{font-family:'Archivo',sans-serif;font-size:.92rem;}
-  .cb .row{grid-template-columns:minmax(92px,150px) 1fr 58px;}
+  .cb .row{grid-template-columns:minmax(92px,220px) 1fr 58px;}
   .cb .bar .ch{position:absolute;left:0;top:0;bottom:0;background:var(--b4);}
   .cb .sub{display:block;font-weight:400;font-size:.74rem;color:var(--muted);}
   .cb .lab{display:inline-block;margin-left:4px;font-family:'IBM Plex Mono',monospace;font-size:.58rem;font-weight:600;
@@ -226,7 +226,11 @@
 <script>
 (function(){
   const W = WINTER_2027, BEST = W.countBest, TOTAL = W.dates.length;
-  const rounds = W.rounds, played = rounds.length, left = TOTAL - played;
+  // Each round sits under ITS OWN date, whatever order it was typed into the file.
+  const slot = W.dates.map(d => W.rounds.find(r => r.date === d) || null);
+  const rounds = slot.filter(Boolean), played = rounds.length, left = TOTAL - played;
+  const lastSlot = slot.map(Boolean).lastIndexOf(true);
+  const gapTxt = i => i < lastSlot ? 'no round' : 'to play';
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const dm = d => d.slice(0,5);                       // DD/MM from DD/MM/YYYY
@@ -235,7 +239,7 @@
 
   /* ---------- players ---------- */
   const P = {};
-  rounds.forEach((r, i) => r.rows.forEach(([name, hcp, pts]) => {
+  slot.forEach((r, i) => r && r.rows.forEach(([name, hcp, pts]) => {
     const p = P[name] || (P[name] = {name, by: Array(TOTAL).fill(null), hcp: {}});
     p.by[i] = pts; p.hcp[i] = hcp;
   }));
@@ -246,10 +250,7 @@
     const keep = ord.slice(0, BEST), drop = new Set(ord.slice(BEST).map(x => x.i));
     const total = sum(keep.map(x => x.v));
     const avg = sc.length ? sum(sc.map(x => x.v)) / sc.length : 0;
-    // projected only where 6 counting rounds are still reachable: average so far x 6
-    const reach6 = sc.length + left >= BEST;
-    const proj = reach6 ? Math.max(total, Math.round(avg * BEST)) : null;
-    return Object.assign(p, {n: sc.length, total, drop, avg, reach6, proj,
+    return Object.assign(p, {n: sc.length, total, drop, avg,
       best: Math.max(...sc.map(x => x.v))});
   }).sort((a,b) => b.total - a.total || a.name.localeCompare(b.name));
   players.forEach(p => {
@@ -264,7 +265,7 @@
     (final ? 'Final report' : `Status report after round ${played}`);
   $('lead').textContent = `Seven Sundays at ${W.course}, ${W.dates[0]} to ${W.dates[TOTAL-1]}. ` +
     `The champion is the player with the highest total from their best ${BEST} Stableford scores.`;
-  $('dots').innerHTML = W.dates.map((d,i) => `<span class="${i < played ? 'on' : ''}" title="${d}"></span>`).join('');
+  $('dots').innerHTML = W.dates.map((d,i) => `<span class="${slot[i] ? 'on' : ''}" title="${d}"></span>`).join('');
   $('pFirst').textContent = dm(W.dates[0]);
   $('pMid').textContent = `${played} of ${TOTAL} played`;
   $('pLast').textContent = dm(W.dates[TOTAL-1]);
@@ -287,7 +288,7 @@
   const kpi = (k,v,s) => `<div class="kpi"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${s}</span></div>`;
   $('kpis').innerHTML =
     kpi("Leader's points", lead.total, esc(list(leaders.map(p => p.name)))) +
-    kpi('Gap 1st to 2nd', gap, leaders.length > 1 ? 'Level at the top' : 'points to ' + esc(list(chasers.map(p => p.name)))) +
+    kpi('Gap 1st to 2nd', gap, leaders.length > 1 ? 'Level at the top' : (gap === 1 ? 'point to ' : 'points to ') + esc(list(chasers.map(p => p.name)))) +
     kpi('Best single round', top.v, esc(list(top.who)) + ', ' + rounds[top.i].date) +
     kpi('Players', players.length, `${sum(rounds.map(r => r.rows.length))} cards in ${played} ${played === 1 ? 'round' : 'rounds'}`);
 
@@ -301,7 +302,7 @@
     W.dates.map((d,i) => `<th title="${d}">R${i+1}<br>${dm(d)}</th>`).join('') +
     `<th>Best ${BEST}</th><th>Pos</th></tr></thead><tbody>` +
     players.map(p => `<tr class="${p.pos === 1 ? 'lead1' : ''}"><td class="nm">${esc(p.name)}</td>` +
-      p.by.map((v,i) => i >= played ? `<td class="fut"></td>`
+      p.by.map((v,i) => !slot[i] ? `<td class="fut" title="${gapTxt(i)}"></td>`
         : v === null ? `<td class="na">&ndash;</td>`
         : `<td class="c ${p.drop.has(i) ? 'dr' : shade(v)}">${v}</td>`).join('') +
       `<td class="tot">${p.total}</td><td class="pos">${p.posTxt}</td></tr>`).join('') + `</tbody>`;
@@ -357,11 +358,11 @@
   const dark = cb.find(p => p.pos >= 5 && p.chance >= 3);
   const pct = c => c >= 99.5 && c < 100 ? '>99%' : c > 0 && c < 1 ? '<1%' : Math.round(c) + '%';
   $('e2so').innerHTML = final
-    ? `All rounds are in, so the crystal ball has nothing left to guess.`
+    ? `All rounds are in, so the crystal ball has nothing left to guess: <b>${esc(list(leaders.map(p => p.name)))}</b> ${leaders.length > 1 ? 'share the title' : 'is champion'} on ${lead.total}.`
     : `<b>${esc(fav.name)}</b> is the favourite at ${pct(fav.chance)} to be champion.` +
       (dark ? ` Dark horse: <b>${esc(dark.name)}</b> (${pct(dark.chance)}), only ${dark.posTxt} today.` : '');
   const maxC = Math.max(...cb.map(p => p.chance), 1);
-  $('outlook').innerHTML = cb.map(p => {
+  $('outlook').innerHTML = final ? '' : cb.map(p => {
     const lab = p === fav && !final ? '<span class="lab fav">Favourite</span>'
       : p === dark ? '<span class="lab">Dark horse</span>'
       : !final && p.chance < 1 ? '<span class="lab mir">Needs a miracle</span>' : '';
@@ -370,8 +371,8 @@
       <span class="bar" title="${pct(p.chance)} chance of being champion"><span class="ch" style="width:${p.chance/maxC*100}%"></span></span>
       <span class="n"><b>${pct(p.chance)}</b></span></div>`;
   }).join('');
-  $('e2src').textContent = `How it guesses: form mixes each player's winter average with a starting estimate (winter field average ` +
-    `${fieldAvg.toFixed(1)}, adjusted by how they did against the field in the 2025 Stableford Series), weighted as ${PRIOR_W} extra rounds. ` +
+  $('e2src').textContent = final ? '' : `How it guesses: form mixes each player's winter average with a starting estimate (winter field average ` +
+    `${fieldAvg.toFixed(1)}, adjusted by how they did against the field if they were ranked in the 2025 Stableford Series; unranked players start level with the field), weighted as ${PRIOR_W} extra rounds. ` +
     `The ${left} remaining ${left === 1 ? 'Sunday is' : 'Sundays are'} then played ${SIMS.toLocaleString('en-GB')} times, with a swing of about ` +
     `${SWING} points a round and everyone playing every remaining Sunday; the best-${BEST} rule picks the champion each time.`;
 
@@ -387,8 +388,8 @@
   W.dates.forEach((d,i) => {
     const y = T + RH * i + RH/2;
     s += `<text x="4" y="${y+4}" font-size="11">R${i+1} ${dm(d)}</text>`;
-    const r = rounds[i];
-    if (!r) { s += `<text x="${x(lo)+6}" y="${y+4}" font-size="11" font-style="italic">to play</text>`; return; }
+    const r = slot[i];
+    if (!r) { s += `<text x="${x(lo)+6}" y="${y+4}" font-size="11" font-style="italic">${gapTxt(i)}</text>`; return; }
     const win = Math.max(...r.rows.map(z => z[2])), seen = {};
     r.rows.slice().sort((a,b) => a[2] - b[2]).forEach(([n,,v]) => {
       const k = seen[v] = (seen[v] || 0) + 1, dy = (k % 2 ? 1 : -1) * Math.floor(k/2) * 7;
@@ -404,12 +405,12 @@
   $('e3so').textContent = `${played} ${played === 1 ? 'round' : 'rounds'} played; fields of ${list(sc.map(a => a.length).map(String))} players.`;
   $('winners').innerHTML = `<thead><tr><th class="rk">Rd</th><th style="text-align:left">Date</th><th class="nm">Winner</th><th>Points</th><th>Field</th><th>Average</th></tr></thead><tbody>` +
     W.dates.map((d,i) => {
-      const r = rounds[i];
-      if (!r) return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td><td class="nm pending" colspan="4">to play</td></tr>`;
-      const win = Math.max(...sc[i]);
+      const r = slot[i];
+      if (!r) return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td><td class="nm pending" colspan="4">${gapTxt(i)}</td></tr>`;
+      const pts = r.rows.map(z => z[2]), win = Math.max(...pts);
       return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td>` +
         `<td class="nm">${esc(list(r.rows.filter(z => z[2] === win).map(z => z[0])))}</td>` +
-        `<td class="key">${win}</td><td>${sc[i].length}</td><td>${(sum(sc[i])/sc[i].length).toFixed(1)}</td></tr>`;
+        `<td class="key">${win}</td><td>${pts.length}</td><td>${(sum(pts)/pts.length).toFixed(1)}</td></tr>`;
     }).join('') + `</tbody>`;
 
   /* ---------- Exhibit 4 ---------- */
