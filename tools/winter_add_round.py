@@ -7,7 +7,8 @@
 Each player is "Name Handicap Points", as Golf GameBook shows them (Stableford NET points).
 The page recalculates itself from the file: nothing else needs editing.
 
-Guards: the date must be one of the seven winter Sundays and not already entered; points 0-60;
+The round is placed in date order, so a late or skipped Sunday still lands under the right date.
+Guards: the date must be one of the winter Sundays listed in the file and not already entered; points 0-60;
 handicap 0-54; no player twice in a round; a name never seen before in the winter or in data.js
 is refused unless passed with --new (so a typo cannot split one player into two).
 Known GameBook spellings are mapped: "Imran K T" -> "Imran K", "Basharat2 Ali" -> "Basharat Ali".
@@ -34,6 +35,9 @@ def parse(line):
     if not m:
         sys.exit('Cannot read "%s": expected "Name Handicap Points"' % line.strip())
     name = ALIASES.get(m.group(1).strip(), m.group(1).strip())
+    if re.search(r"['\"\\<>]", name):
+        sys.exit('"%s": names cannot contain quote marks, < > or \\ (they would break the data file). '
+                 'Write it without, e.g. ONeil.' % name)
     return name, int(m.group(2)), int(m.group(3))
 
 
@@ -61,8 +65,14 @@ def build(src, date, lines, new=()):
     rows.sort(key=lambda r: (-r[2], r[0]))
     block = "    { date: '%s', course: 'Wike Ridge', rows: [\n%s\n    ]},\n" % (
         date, '\n'.join("      ['%s', %d, %d]," % r for r in rows))
-    end = src.rindex('  ]\n};')
-    return src[:end] + block + src[end:], block
+    # Keep the file in date order: go in front of the first round dated later.
+    key = lambda d: tuple(reversed(d.split('/')))
+    at = src.rindex('  ]\n};')
+    for mm in re.finditer(r"\n    \{ date: '([0-9/]+)'", src):
+        if key(mm.group(1)) > key(date):
+            at = mm.start() + 1
+            break
+    return src[:at] + block + src[at:], block
 
 
 def main():

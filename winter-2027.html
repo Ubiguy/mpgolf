@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Winter Tournament 2027 season</title>
-<meta name="description" content="Mates Playing Golf Winter Tournament: seven Sundays at Wike Ridge, 15/11/2026 to 27/12/2026. Best 6 Stableford scores win.">
+<meta name="description" content="Mates Playing Golf Winter Tournament: twelve Sundays at Wike Ridge, 15/11/2026 to 31/01/2027. Best 6 Stableford scores win.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="style.css?v=f9aa6899">
 <link rel="icon" href="favicon-32.png?v=7d5e942c" sizes="32x32" type="image/png">
@@ -28,7 +28,7 @@
 
   /* progress strip */
   .prog{display:flex;flex-direction:column;gap:6px;}
-  .prog .dots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .prog .dots{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;}
   .prog .dots span{height:10px;border-radius:2px;background:var(--surface-sunk);border:1px solid var(--border);}
   .prog .dots span.on{background:var(--b5);border-color:var(--b5);}
   .prog .lbl{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;
@@ -90,7 +90,7 @@
   .ol .pn{color:var(--muted);}
   .ol .n{font-variant-numeric:tabular-nums;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.78rem;}
   .ol .n b{font-family:'Archivo',sans-serif;font-size:.92rem;}
-  .cb .row{grid-template-columns:minmax(92px,150px) 1fr 58px;}
+  .cb .row{grid-template-columns:minmax(92px,220px) 1fr 58px;}
   .cb .bar .ch{position:absolute;left:0;top:0;bottom:0;background:var(--b4);}
   .cb .sub{display:block;font-weight:400;font-size:.74rem;color:var(--muted);}
   .cb .lab{display:inline-block;margin-left:4px;font-family:'IBM Plex Mono',monospace;font-size:.58rem;font-weight:600;
@@ -104,7 +104,7 @@
   .chart svg{display:block;width:100%;height:auto;}
   .chart text{font-family:'IBM Plex Mono',monospace;fill:var(--muted);}
   .chart .wl{fill:var(--ink);font-weight:600;}
-  table.wn td,table.wn th{padding:6px 6px;}
+  table.wn td,table.wn th{padding:6px 4px;}
   table.wn td.nm{white-space:normal;}
 
   .method{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--b5);
@@ -188,7 +188,7 @@
       <p class="so" id="e2so"></p>
       <div class="ol cb" id="outlook"></div>
       <div class="legend">
-        <span><i style="background:var(--b4)"></i>Chance of being champion on 27/12</span>
+        <span><i style="background:var(--b4)"></i>Chance of being champion on <span id="cbEnd"></span></span>
       </div>
       <p class="src" id="e2src"></p>
     </section>
@@ -222,11 +222,17 @@
 </div>
 
 <script src="data.js?v=3feffbfc"></script>
-<script src="data-winter-2027.js?v=6dd248bb"></script>
+<script src="data-winter-2027.js?v=15624e1d"></script>
 <script>
 (function(){
   const W = WINTER_2027, BEST = W.countBest, TOTAL = W.dates.length;
-  const rounds = W.rounds, played = rounds.length, left = TOTAL - played;
+  // Each round sits under ITS OWN date, whatever order it was typed into the file.
+  const slot = W.dates.map(d => W.rounds.find(r => r.date === d) || null);
+  const lastSlot = slot.map(Boolean).lastIndexOf(true);
+  // Sundays still to come = dates AFTER the latest round entered; a Sunday skipped earlier
+  // (frost, cancellation) is gone, not "to go".
+  const rounds = slot.filter(Boolean), played = rounds.length, left = TOTAL - 1 - lastSlot;
+  const gapTxt = i => i < lastSlot ? 'no round' : 'to play';
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const dm = d => d.slice(0,5);                       // DD/MM from DD/MM/YYYY
@@ -235,7 +241,7 @@
 
   /* ---------- players ---------- */
   const P = {};
-  rounds.forEach((r, i) => r.rows.forEach(([name, hcp, pts]) => {
+  slot.forEach((r, i) => r && r.rows.forEach(([name, hcp, pts]) => {
     const p = P[name] || (P[name] = {name, by: Array(TOTAL).fill(null), hcp: {}});
     p.by[i] = pts; p.hcp[i] = hcp;
   }));
@@ -246,10 +252,7 @@
     const keep = ord.slice(0, BEST), drop = new Set(ord.slice(BEST).map(x => x.i));
     const total = sum(keep.map(x => x.v));
     const avg = sc.length ? sum(sc.map(x => x.v)) / sc.length : 0;
-    // projected only where 6 counting rounds are still reachable: average so far x 6
-    const reach6 = sc.length + left >= BEST;
-    const proj = reach6 ? Math.max(total, Math.round(avg * BEST)) : null;
-    return Object.assign(p, {n: sc.length, total, drop, avg, reach6, proj,
+    return Object.assign(p, {n: sc.length, total, drop, avg,
       best: Math.max(...sc.map(x => x.v))});
   }).sort((a,b) => b.total - a.total || a.name.localeCompare(b.name));
   players.forEach(p => {
@@ -261,10 +264,13 @@
   /* ---------- header ---------- */
   const final = left === 0;
   $('kicker').innerHTML = `Mates Playing Golf &middot; 2027 season &middot; ` +
-    (final ? 'Final report' : `Status report after round ${played}`);
-  $('lead').textContent = `Seven Sundays at ${W.course}, ${W.dates[0]} to ${W.dates[TOTAL-1]}. ` +
+    (final ? 'Final report' : `Status report after round ${lastSlot + 1}`);
+  const WORDS = ['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
+  const nSun = (WORDS[TOTAL] || TOTAL) + ' Sundays';
+  $('lead').textContent = `${nSun[0].toUpperCase() + nSun.slice(1)} at ${W.course}, ${W.dates[0]} to ${W.dates[TOTAL-1]}. ` +
     `The champion is the player with the highest total from their best ${BEST} Stableford scores.`;
-  $('dots').innerHTML = W.dates.map((d,i) => `<span class="${i < played ? 'on' : ''}" title="${d}"></span>`).join('');
+  $('dots').style.gridTemplateColumns = `repeat(${TOTAL},1fr)`;
+  $('dots').innerHTML = W.dates.map((d,i) => `<span class="${slot[i] ? 'on' : ''}" title="${d}"></span>`).join('');
   $('pFirst').textContent = dm(W.dates[0]);
   $('pMid').textContent = `${played} of ${TOTAL} played`;
   $('pLast').textContent = dm(W.dates[TOTAL-1]);
@@ -281,13 +287,13 @@
     : `<b>${esc(lead.name)}</b> leads on <b>${lead.total}</b> points, ${gap} clear of ${esc(list(chasers.map(p => p.name)))}${chasers.length > 1 ? ' (joint second)' : ''}.`;
   const t2 = `Best single round so far: <b>${top.v}</b> points by ${esc(list(top.who))} on ${rounds[top.i].date}.`;
   const t3 = final
-    ? `The tournament is complete: ${players.length} players took part and each player's lowest round beyond ${BEST} has been dropped.`
+    ? `The tournament is complete: ${players.length} players took part and rounds outside each player's best ${BEST} have been dropped.`
     : `${left} ${left === 1 ? 'Sunday' : 'Sundays'} to go; ${reach} of ${players.length} players can still reach ${BEST} counting scores. Decided ${W.dates[TOTAL-1]}.`;
   $('take').innerHTML = [t1,t2,t3].map(t => `<li><span>${t}</span></li>`).join('');
   const kpi = (k,v,s) => `<div class="kpi"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${s}</span></div>`;
   $('kpis').innerHTML =
     kpi("Leader's points", lead.total, esc(list(leaders.map(p => p.name)))) +
-    kpi('Gap 1st to 2nd', gap, leaders.length > 1 ? 'Level at the top' : 'points to ' + esc(list(chasers.map(p => p.name)))) +
+    kpi('Gap 1st to 2nd', gap, leaders.length > 1 ? 'Level at the top' : (gap === 1 ? 'point to ' : 'points to ') + esc(list(chasers.map(p => p.name)))) +
     kpi('Best single round', top.v, esc(list(top.who)) + ', ' + rounds[top.i].date) +
     kpi('Players', players.length, `${sum(rounds.map(r => r.rows.length))} cards in ${played} ${played === 1 ? 'round' : 'rounds'}`);
 
@@ -301,7 +307,7 @@
     W.dates.map((d,i) => `<th title="${d}">R${i+1}<br>${dm(d)}</th>`).join('') +
     `<th>Best ${BEST}</th><th>Pos</th></tr></thead><tbody>` +
     players.map(p => `<tr class="${p.pos === 1 ? 'lead1' : ''}"><td class="nm">${esc(p.name)}</td>` +
-      p.by.map((v,i) => i >= played ? `<td class="fut"></td>`
+      p.by.map((v,i) => !slot[i] ? `<td class="fut" title="${gapTxt(i)}"></td>`
         : v === null ? `<td class="na">&ndash;</td>`
         : `<td class="c ${p.drop.has(i) ? 'dr' : shade(v)}">${v}</td>`).join('') +
       `<td class="tot">${p.total}</td><td class="pos">${p.posTxt}</td></tr>`).join('') + `</tbody>`;
@@ -357,11 +363,12 @@
   const dark = cb.find(p => p.pos >= 5 && p.chance >= 3);
   const pct = c => c >= 99.5 && c < 100 ? '>99%' : c > 0 && c < 1 ? '<1%' : Math.round(c) + '%';
   $('e2so').innerHTML = final
-    ? `All rounds are in, so the crystal ball has nothing left to guess.`
+    ? `All rounds are in, so the crystal ball has nothing left to guess: <b>${esc(list(leaders.map(p => p.name)))}</b> ${leaders.length > 1 ? 'share the title' : 'is champion'} on ${lead.total}.`
     : `<b>${esc(fav.name)}</b> is the favourite at ${pct(fav.chance)} to be champion.` +
       (dark ? ` Dark horse: <b>${esc(dark.name)}</b> (${pct(dark.chance)}), only ${dark.posTxt} today.` : '');
+  $('cbEnd').textContent = W.dates[TOTAL-1];
   const maxC = Math.max(...cb.map(p => p.chance), 1);
-  $('outlook').innerHTML = cb.map(p => {
+  $('outlook').innerHTML = final ? '' : cb.map(p => {
     const lab = p === fav && !final ? '<span class="lab fav">Favourite</span>'
       : p === dark ? '<span class="lab">Dark horse</span>'
       : !final && p.chance < 1 ? '<span class="lab mir">Needs a miracle</span>' : '';
@@ -370,51 +377,57 @@
       <span class="bar" title="${pct(p.chance)} chance of being champion"><span class="ch" style="width:${p.chance/maxC*100}%"></span></span>
       <span class="n"><b>${pct(p.chance)}</b></span></div>`;
   }).join('');
-  $('e2src').textContent = `How it guesses: form mixes each player's winter average with a starting estimate (winter field average ` +
-    `${fieldAvg.toFixed(1)}, adjusted by how they did against the field in the 2025 Stableford Series), weighted as ${PRIOR_W} extra rounds. ` +
+  $('e2src').textContent = final ? '' : `How it guesses: form mixes each player's winter average with a starting estimate (winter field average ` +
+    `${fieldAvg.toFixed(1)}, adjusted by how they did against the field if they were ranked in the 2025 Stableford Series; unranked players start level with the field), weighted as ${PRIOR_W} extra rounds. ` +
     `The ${left} remaining ${left === 1 ? 'Sunday is' : 'Sundays are'} then played ${SIMS.toLocaleString('en-GB')} times, with a swing of about ` +
     `${SWING} points a round and everyone playing every remaining Sunday; the best-${BEST} rule picks the champion each time.`;
 
   /* ---------- Exhibit 3 ---------- */
   const all = rounds.flatMap(r => r.rows.map(x => x[2]));
   const lo = Math.floor((Math.min(...all) - 2) / 5) * 5, hi = Math.ceil((Math.max(...all) + 2) / 5) * 5;
-  const Wd = 640, L = 64, R = 20, T = 18, RH = 36, H = T + RH * TOTAL + 26;
+  // one row per round PLAYED, then a single row for the Sundays still to come, so the chart
+  // stays readable on a phone however long the season is
+  const rowsC = slot.map((r,i) => ({r, i})).filter(o => o.r || o.i < lastSlot);
+  const toCome = TOTAL - 1 - lastSlot;
+  const Wd = 420, L = 70, R = 14, T = 18, RH = 34, H = T + RH * (rowsC.length + (toCome ? 1 : 0)) + 26;
   const x = v => L + (v - lo) / (hi - lo) * (Wd - L - R);
   let s = `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Points scored by every player in each round">`;
   for (let v = lo; v <= hi; v += 5)
     s += `<line x1="${x(v)}" x2="${x(v)}" y1="${T-6}" y2="${H-22}" stroke="var(--hairline)"/>` +
-         `<text x="${x(v)}" y="${H-6}" font-size="11" text-anchor="middle">${v}</text>`;
-  W.dates.forEach((d,i) => {
-    const y = T + RH * i + RH/2;
-    s += `<text x="4" y="${y+4}" font-size="11">R${i+1} ${dm(d)}</text>`;
-    const r = rounds[i];
-    if (!r) { s += `<text x="${x(lo)+6}" y="${y+4}" font-size="11" font-style="italic">to play</text>`; return; }
+         `<text x="${x(v)}" y="${H-6}" font-size="12" text-anchor="middle">${v}</text>`;
+  if (toCome) { const y = T + RH * rowsC.length + RH/2;
+    s += `<text x="4" y="${y+4}" font-size="12">R${lastSlot+2}${toCome > 1 ? '-R' + TOTAL : ''}</text>` +
+         `<text x="${L+4}" y="${y+4}" font-size="12" font-style="italic">${toCome} to play, ${dm(W.dates[lastSlot+1])} to ${dm(W.dates[TOTAL-1])}</text>`; }
+  rowsC.forEach(({r, i}, row) => {
+    const d = W.dates[i], y = T + RH * row + RH/2;
+    s += `<text x="4" y="${y+4}" font-size="12">R${i+1} ${dm(d)}</text>`;
+    if (!r) { s += `<text x="${L+4}" y="${y+4}" font-size="12" font-style="italic">${gapTxt(i)}</text>`; return; }
     const win = Math.max(...r.rows.map(z => z[2])), seen = {};
     r.rows.slice().sort((a,b) => a[2] - b[2]).forEach(([n,,v]) => {
-      const k = seen[v] = (seen[v] || 0) + 1, dy = (k % 2 ? 1 : -1) * Math.floor(k/2) * 7;
-      s += `<circle cx="${x(v)}" cy="${y+dy}" r="5.5" fill="${v === win ? 'var(--b5)' : 'var(--b3)'}" stroke="var(--surface)" stroke-width="1.2"><title>${esc(n)} ${v}</title></circle>`;
+      const k = seen[v] = (seen[v] || 0) + 1, dy = (k % 2 ? 1 : -1) * Math.floor(k/2) * 8;
+      s += `<circle cx="${x(v)}" cy="${y+dy}" r="6" fill="${v === win ? 'var(--b5)' : 'var(--b3)'}" stroke="var(--surface)" stroke-width="1.2"><title>${esc(n)} ${v}</title></circle>`;
     });
     const av = sum(r.rows.map(z => z[2])) / r.rows.length;
     s += `<line x1="${x(av)}" x2="${x(av)}" y1="${y-12}" y2="${y+12}" stroke="var(--ink)" stroke-width="2"/>`;
     const wn = r.rows.filter(z => z[2] === win).map(z => z[0].split(' ')[0]);
-    s += `<text class="wl" x="${Math.min(x(win)+9, Wd-R)}" y="${y-8}" font-size="11" text-anchor="${x(win) > Wd-150 ? 'end' : 'start'}">${esc(wn.join(', '))} ${win}</text>`;
+    s += `<text class="wl" x="${x(win) > Wd-110 ? x(win)-9 : x(win)+9}" y="${y-8}" font-size="12" text-anchor="${x(win) > Wd-110 ? 'end' : 'start'}">${esc(wn.join(', '))} ${win}</text>`;
   });
   $('chart').innerHTML = s + `</svg><div class="legend" style="padding:4px 6px 2px"><span><i style="background:var(--b5);border-radius:50%"></i>round winner</span><span><i style="background:var(--b3);border-radius:50%"></i>other players</span><span><i style="background:var(--ink);width:3px"></i>field average</span></div>`;
   const sc = rounds.map(r => r.rows.map(z => z[2]));
   $('e3so').textContent = `${played} ${played === 1 ? 'round' : 'rounds'} played; fields of ${list(sc.map(a => a.length).map(String))} players.`;
   $('winners').innerHTML = `<thead><tr><th class="rk">Rd</th><th style="text-align:left">Date</th><th class="nm">Winner</th><th>Points</th><th>Field</th><th>Average</th></tr></thead><tbody>` +
     W.dates.map((d,i) => {
-      const r = rounds[i];
-      if (!r) return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td><td class="nm pending" colspan="4">to play</td></tr>`;
-      const win = Math.max(...sc[i]);
+      const r = slot[i];
+      if (!r) return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td><td class="nm pending" colspan="4">${gapTxt(i)}</td></tr>`;
+      const pts = r.rows.map(z => z[2]), win = Math.max(...pts);
       return `<tr><td class="rk">R${i+1}</td><td style="text-align:left">${d}</td>` +
         `<td class="nm">${esc(list(r.rows.filter(z => z[2] === win).map(z => z[0])))}</td>` +
-        `<td class="key">${win}</td><td>${sc[i].length}</td><td>${(sum(sc[i])/sc[i].length).toFixed(1)}</td></tr>`;
+        `<td class="key">${win}</td><td>${pts.length}</td><td>${(sum(pts)/pts.length).toFixed(1)}</td></tr>`;
     }).join('') + `</tbody>`;
 
   /* ---------- Exhibit 4 ---------- */
   $('mRule').innerHTML = `<b>How that is applied.</b> A player's total is the sum of their best ${BEST} round scores. ` +
-    `Anyone who plays ${BEST} rounds or fewer counts all of them. Anyone who plays all ${TOTAL} has their lowest score dropped ` +
+    `Anyone who plays ${BEST} rounds or fewer counts all of them. Anyone who plays more than ${BEST} has only their best ${BEST} counted; the rest drop ` +
     `(shown grey in Exhibit 1). The winner is decided after the last round on ${W.dates[TOTAL-1]}.`;
   $('mWhere').innerHTML = `<b>Rounds.</b> ${TOTAL} Sundays: ${W.dates.join(', ')}.`;
 })();
