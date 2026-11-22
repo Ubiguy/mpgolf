@@ -86,7 +86,8 @@
   .ol .nm{font-weight:600;line-height:1.15;}
   .ol .bar{position:relative;height:16px;background:var(--surface-sunk);border-radius:2px;overflow:hidden;}
   .ol .bar .bk{position:absolute;left:0;top:0;bottom:0;background:var(--b5);}
-  .ol .bar .pj{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,var(--b2) 0 4px,var(--b3) 4px 7px);}
+  .ol .bar .pj{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,#C9C4BB 0 4px,#E2DED7 4px 7px);}
+  .ol .pn{color:var(--muted);}
   .ol .n{font-variant-numeric:tabular-nums;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.78rem;}
   .ol .n b{font-family:'Archivo',sans-serif;font-size:.92rem;}
 
@@ -179,9 +180,9 @@
       <div class="ol" id="outlook"></div>
       <div class="legend">
         <span><i style="background:var(--b5)"></i>Banked: best-6 total so far</span>
-        <span><i style="background:repeating-linear-gradient(135deg,var(--b2) 0 4px,var(--b3) 4px 7px)"></i>Projected: average so far &times; rounds that can still count</span>
+        <span><i style="background:repeating-linear-gradient(135deg,#C9C4BB 0 4px,#E2DED7 4px 7px)"></i>Projected if they keep this average (average so far &times; 6). Not a result.</span>
       </div>
-      <p class="src">A projection, not a prediction: it assumes each player keeps scoring at their current average and plays every remaining Sunday.</p>
+      <p class="src">Shown only for players who can still play 6 rounds. It assumes they keep scoring at their current average and play every remaining Sunday.</p>
     </section>
 
     <section class="ex brk" aria-labelledby="e3">
@@ -212,7 +213,7 @@
   </footer>
 </div>
 
-<script src="data-winter-2027.js"></script>
+<script src="data-winter-2027.js?v=6dd248bb"></script>
 <script>
 (function(){
   const W = WINTER_2027, BEST = W.countBest, TOTAL = W.dates.length;
@@ -236,9 +237,10 @@
     const keep = ord.slice(0, BEST), drop = new Set(ord.slice(BEST).map(x => x.i));
     const total = sum(keep.map(x => x.v));
     const avg = sc.length ? sum(sc.map(x => x.v)) / sc.length : 0;
-    const canCount = Math.min(BEST, sc.length + left);
-    const proj = Math.max(total, Math.round(avg * canCount));
-    return Object.assign(p, {n: sc.length, total, drop, avg, canCount, proj,
+    // projected only where 6 counting rounds are still reachable: average so far x 6
+    const reach6 = sc.length + left >= BEST;
+    const proj = reach6 ? Math.max(total, Math.round(avg * BEST)) : null;
+    return Object.assign(p, {n: sc.length, total, drop, avg, reach6, proj,
       best: Math.max(...sc.map(x => x.v))});
   }).sort((a,b) => b.total - a.total || a.name.localeCompare(b.name));
   players.forEach(p => {
@@ -301,17 +303,21 @@
     `<span>&ndash; did not play</span>`;
 
   /* ---------- Exhibit 2 ---------- */
-  const maxP = Math.max(...players.map(p => p.proj));
-  const pl = players.slice().sort((a,b) => b.proj - a.proj || b.total - a.total || a.name.localeCompare(b.name));
+  const pv = p => final || p.proj === null ? p.total : p.proj;
+  const maxP = Math.max(...players.map(pv));
+  const pl = players.slice().sort((a,b) => pv(b) - pv(a) || b.total - a.total || a.name.localeCompare(b.name));
   $('e2so').textContent = final
     ? 'All rounds are in: banked totals are final.'
-    : `On current form ${pl[0].name} projects highest, to about ${pl[0].proj} points.`;
-  $('outlook').innerHTML = pl.map(p => `<div class="row">
+    : `Banked points are real; the grey part is only what each player would reach if they kept their current average for 6 rounds. On that basis ${pl[0].name} would finish highest, on about ${pv(pl[0])}.`;
+  $('outlook').innerHTML = pl.map(p => {
+    const showP = !final && p.proj !== null;
+    return `<div class="row">
       <span class="nm">${esc(p.name)}</span>
-      <span class="bar" title="${p.total} banked, ${p.proj} projected">
-        <span class="pj" style="left:${p.total/maxP*100}%;width:${(p.proj-p.total)/maxP*100}%"></span>
+      <span class="bar" title="${p.total} banked${showP ? ', ' + p.proj + ' projected if they keep this average' : ''}">
+        ${showP ? `<span class="pj" style="left:${p.total/maxP*100}%;width:${(p.proj-p.total)/maxP*100}%"></span>` : ''}
         <span class="bk" style="width:${p.total/maxP*100}%"></span></span>
-      <span class="n"><b>${p.total}</b> &rarr; ${p.proj}</span></div>`).join('');
+      <span class="n"><b>${p.total}</b>${showP ? ` <span class="pn">&rarr; ${p.proj}</span>` : final ? '' : ' <span class="pn">(cannot reach 6)</span>'}</span></div>`;
+  }).join('');
 
   /* ---------- Exhibit 3 ---------- */
   const all = rounds.flatMap(r => r.rows.map(x => x[2]));
