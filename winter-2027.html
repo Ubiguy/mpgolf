@@ -90,6 +90,14 @@
   .ol .pn{color:var(--muted);}
   .ol .n{font-variant-numeric:tabular-nums;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:.78rem;}
   .ol .n b{font-family:'Archivo',sans-serif;font-size:.92rem;}
+  .cb .row{grid-template-columns:minmax(92px,150px) 1fr 58px;}
+  .cb .bar .ch{position:absolute;left:0;top:0;bottom:0;background:var(--b4);}
+  .cb .sub{display:block;font-weight:400;font-size:.74rem;color:var(--muted);}
+  .cb .lab{display:inline-block;margin-left:4px;font-family:'IBM Plex Mono',monospace;font-size:.58rem;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;padding:1px 5px;border-radius:3px;background:var(--b1);color:var(--b-ink-dark);vertical-align:1px;}
+  .cb .lab.fav{background:var(--b5);color:#fff;}
+  .cb .lab.mir{background:var(--drop);color:var(--drop-ink);}
+  .fun{font-size:.78rem;font-family:'IBM Plex Mono',monospace;color:var(--b5);font-weight:600;}
 
   /* Exhibit 3 */
   .chart{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:8px;}
@@ -175,14 +183,14 @@
 
     <section class="ex brk" aria-labelledby="e2">
       <span class="tag">Exhibit 2</span>
-      <h2 id="e2">Outlook: banked versus projected</h2>
+      <h2 id="e2">Outlook: the crystal ball</h2>
+      <span class="fun">Just for fun between friends. Not a result, and no bets.</span>
       <p class="so" id="e2so"></p>
-      <div class="ol" id="outlook"></div>
+      <div class="ol cb" id="outlook"></div>
       <div class="legend">
-        <span><i style="background:var(--b5)"></i>Banked: best-6 total so far</span>
-        <span><i style="background:repeating-linear-gradient(135deg,#C9C4BB 0 4px,#E2DED7 4px 7px)"></i>Projected if they keep this average (average so far &times; 6). Not a result.</span>
+        <span><i style="background:var(--b4)"></i>Chance of being champion on 27/12</span>
       </div>
-      <p class="src">Shown only for players who can still play 6 rounds. It assumes they keep scoring at their current average and play every remaining Sunday.</p>
+      <p class="src" id="e2src"></p>
     </section>
 
     <section class="ex brk" aria-labelledby="e3">
@@ -213,6 +221,7 @@
   </footer>
 </div>
 
+<script src="data.js?v=3feffbfc"></script>
 <script src="data-winter-2027.js?v=6dd248bb"></script>
 <script>
 (function(){
@@ -303,21 +312,68 @@
     `<span>&ndash; did not play</span>`;
 
   /* ---------- Exhibit 2 ---------- */
-  const pv = p => final || p.proj === null ? p.total : p.proj;
-  const maxP = Math.max(...players.map(pv));
-  const pl = players.slice().sort((a,b) => pv(b) - pv(a) || b.total - a.total || a.name.localeCompare(b.name));
-  $('e2so').textContent = final
-    ? 'All rounds are in: banked totals are final.'
-    : `Banked points are real; the grey part is only what each player would reach if they kept their current average for 6 rounds. On that basis ${pl[0].name} would finish highest, on about ${pv(pl[0])}.`;
-  $('outlook').innerHTML = pl.map(p => {
-    const showP = !final && p.proj !== null;
+  /* The crystal ball. FORM = expected points per round: the winter average,
+     pulled towards a prior so one lucky card does not make a favourite. The
+     prior is the winter field average plus how far the player sat above or
+     below the field in the 2025 Stableford Series (best-8 points / 8, from
+     data.js); no 2025 record = level with the field. The remaining Sundays
+     are then played SIMS times: every player plays every remaining Sunday,
+     scores form +/- a normal swing, and
+     the best-6 rule picks the champion. A seeded random number generator
+     makes the result the same for the same data, on screen and in print. */
+  const ALIAS = {'Basharat2 Ali':'Basharat Ali','Imran K T':'Imran K'}, PRIOR_W = 2, SWING = 5, SIMS = 5000;
+  const allCards = rounds.flatMap(r => r.rows.map(z => z[2]));
+  const fieldAvg = sum(allCards) / allCards.length;
+  const rel = {};
+  if (typeof STABLEFORD !== 'undefined') {
+    const per = STABLEFORD.map(r => [ALIAS[r[1]] || r[1], r[4] / 8]);
+    const mean = sum(per.map(x => x[1])) / per.length;
+    per.forEach(([n,v]) => rel[n] = v - mean);
+  }
+  players.forEach(p => {
+    const sc = p.by.filter(v => v !== null);
+    p.prior = fieldAvg + (rel[p.name] || 0);
+    p.form = (sum(sc) + PRIOR_W * p.prior) / (sc.length + PRIOR_W);
+    p.turnUp = 1;                                   // assume everyone plays every remaining Sunday
+    p.has2025 = p.name in rel;
+  });
+  let seed = 0; allCards.forEach((v,i) => seed = (seed * 31 + v + i) >>> 0);
+  const rnd = () => { seed = (seed + 0x6D2B79F5) >>> 0; let t = seed;
+    t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+  players.forEach(p => { p.win = 0; p.rankSum = 0; });
+  for (let s = 0; s < SIMS; s++) {
+    const tot = players.map(p => {
+      const sc = p.by.filter(v => v !== null);
+      for (let k = 0; k < left; k++) if (rnd() < p.turnUp) sc.push(Math.max(0, Math.round(p.form + SWING * gauss())));
+      return sum(sc.sort((a,b) => b - a).slice(0, BEST));
+    });
+    const hi = Math.max(...tot), winners = tot.filter(t => t === hi).length;
+    players.forEach((p,i) => { if (tot[i] === hi) p.win += 1 / winners; p.rankSum += 1 + tot.filter(t => t > tot[i]).length; });
+  }
+  players.forEach(p => { p.chance = p.win / SIMS * 100; p.avgRank = p.rankSum / SIMS; });
+  const cb = players.slice().sort((a,b) => b.chance - a.chance || a.avgRank - b.avgRank || a.name.localeCompare(b.name));
+  const fav = cb[0];
+  const dark = cb.find(p => p.pos >= 5 && p.chance >= 3);
+  const pct = c => c >= 99.5 && c < 100 ? '>99%' : c > 0 && c < 1 ? '<1%' : Math.round(c) + '%';
+  $('e2so').innerHTML = final
+    ? `All rounds are in, so the crystal ball has nothing left to guess.`
+    : `<b>${esc(fav.name)}</b> is the favourite at ${pct(fav.chance)} to be champion.` +
+      (dark ? ` Dark horse: <b>${esc(dark.name)}</b> (${pct(dark.chance)}), only ${dark.posTxt} today.` : '');
+  const maxC = Math.max(...cb.map(p => p.chance), 1);
+  $('outlook').innerHTML = cb.map(p => {
+    const lab = p === fav && !final ? '<span class="lab fav">Favourite</span>'
+      : p === dark ? '<span class="lab">Dark horse</span>'
+      : !final && p.chance < 1 ? '<span class="lab mir">Needs a miracle</span>' : '';
     return `<div class="row">
-      <span class="nm">${esc(p.name)}</span>
-      <span class="bar" title="${p.total} banked${showP ? ', ' + p.proj + ' projected if they keep this average' : ''}">
-        ${showP ? `<span class="pj" style="left:${p.total/maxP*100}%;width:${(p.proj-p.total)/maxP*100}%"></span>` : ''}
-        <span class="bk" style="width:${p.total/maxP*100}%"></span></span>
-      <span class="n"><b>${p.total}</b>${showP ? ` <span class="pn">&rarr; ${p.proj}</span>` : final ? '' : ' <span class="pn">(cannot reach 6)</span>'}</span></div>`;
+      <span class="nm">${esc(p.name)}${lab}<span class="sub">form ${p.form.toFixed(1)} a round &middot; now ${p.posTxt} on ${p.total}</span></span>
+      <span class="bar" title="${pct(p.chance)} chance of being champion"><span class="ch" style="width:${p.chance/maxC*100}%"></span></span>
+      <span class="n"><b>${pct(p.chance)}</b></span></div>`;
   }).join('');
+  $('e2src').textContent = `How it guesses: form mixes each player's winter average with a starting estimate (winter field average ` +
+    `${fieldAvg.toFixed(1)}, adjusted by how they did against the field in the 2025 Stableford Series), weighted as ${PRIOR_W} extra rounds. ` +
+    `The ${left} remaining ${left === 1 ? 'Sunday is' : 'Sundays are'} then played ${SIMS.toLocaleString('en-GB')} times, with a swing of about ` +
+    `${SWING} points a round and everyone playing every remaining Sunday; the best-${BEST} rule picks the champion each time.`;
 
   /* ---------- Exhibit 3 ---------- */
   const all = rounds.flatMap(r => r.rows.map(x => x[2]));
