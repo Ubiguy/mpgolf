@@ -228,8 +228,10 @@
   const W = WINTER_2027, BEST = W.countBest, TOTAL = W.dates.length;
   // Each round sits under ITS OWN date, whatever order it was typed into the file.
   const slot = W.dates.map(d => W.rounds.find(r => r.date === d) || null);
-  const rounds = slot.filter(Boolean), played = rounds.length, left = TOTAL - played;
   const lastSlot = slot.map(Boolean).lastIndexOf(true);
+  // Sundays still to come = dates AFTER the latest round entered; a Sunday skipped earlier
+  // (frost, cancellation) is gone, not "to go".
+  const rounds = slot.filter(Boolean), played = rounds.length, left = TOTAL - 1 - lastSlot;
   const gapTxt = i => i < lastSlot ? 'no round' : 'to play';
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -262,7 +264,7 @@
   /* ---------- header ---------- */
   const final = left === 0;
   $('kicker').innerHTML = `Mates Playing Golf &middot; 2027 season &middot; ` +
-    (final ? 'Final report' : `Status report after round ${played}`);
+    (final ? 'Final report' : `Status report after round ${lastSlot + 1}`);
   const WORDS = ['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
   const nSun = (WORDS[TOTAL] || TOTAL) + ' Sundays';
   $('lead').textContent = `${nSun[0].toUpperCase() + nSun.slice(1)} at ${W.course}, ${W.dates[0]} to ${W.dates[TOTAL-1]}. ` +
@@ -285,7 +287,7 @@
     : `<b>${esc(lead.name)}</b> leads on <b>${lead.total}</b> points, ${gap} clear of ${esc(list(chasers.map(p => p.name)))}${chasers.length > 1 ? ' (joint second)' : ''}.`;
   const t2 = `Best single round so far: <b>${top.v}</b> points by ${esc(list(top.who))} on ${rounds[top.i].date}.`;
   const t3 = final
-    ? `The tournament is complete: ${players.length} players took part and each player's lowest round beyond ${BEST} has been dropped.`
+    ? `The tournament is complete: ${players.length} players took part and rounds outside each player's best ${BEST} have been dropped.`
     : `${left} ${left === 1 ? 'Sunday' : 'Sundays'} to go; ${reach} of ${players.length} players can still reach ${BEST} counting scores. Decided ${W.dates[TOTAL-1]}.`;
   $('take').innerHTML = [t1,t2,t3].map(t => `<li><span>${t}</span></li>`).join('');
   const kpi = (k,v,s) => `<div class="kpi"><span class="k">${k}</span><span class="v">${v}</span><span class="s">${s}</span></div>`;

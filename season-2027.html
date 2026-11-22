@@ -75,9 +75,9 @@
   const top = Math.max(...best.map(b => b[1])), who = best.filter(b => b[1] === top).map(b => b[0]);
   document.getElementById('wSum').textContent =
     `${T} Sundays at Wike Ridge, ${W.dates[0]} to ${W.dates[T-1]}. Best ${W.countBest} Stableford scores win. ` +
-    `${n} of ${T} played: ${who.join(' and ')} ${who.length > 1 ? 'share the lead' : 'leads'} on ${top}.`;
+    `${n} of ${T} played: ${who.join(' and ')} ${W.rounds.some(r => r.date === W.dates[T-1]) ? (who.length > 1 ? 'share the title' : 'is champion') : (who.length > 1 ? 'share the lead' : 'leads')} on ${top}.`;
   document.getElementById('stamp').innerHTML = `${n} of ${T} winter rounds played<br>${W.dates[0]} to ${W.dates[T-1]}`;
-  if (n === T) { const c = document.getElementById('chip'); c.textContent = 'Final'; c.className = 'chip done'; }
+  if (W.rounds.some(r => r.date === W.dates[T-1])) { const c = document.getElementById('chip'); c.textContent = 'Final'; c.className = 'chip done'; }
 })();
 </script>
 </body>
