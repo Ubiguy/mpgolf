@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Winter Tournament 2027 season</title>
-<meta name="description" content="Mates Playing Golf Winter Tournament: seven Sundays at Wike Ridge, 15/11/2026 to 27/12/2026. Best 6 Stableford scores win.">
+<meta name="description" content="Mates Playing Golf Winter Tournament: twelve Sundays at Wike Ridge, 15/11/2026 to 31/01/2027. Best 6 Stableford scores win.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="style.css?v=f9aa6899">
 <link rel="icon" href="favicon-32.png?v=7d5e942c" sizes="32x32" type="image/png">
@@ -28,7 +28,7 @@
 
   /* progress strip */
   .prog{display:flex;flex-direction:column;gap:6px;}
-  .prog .dots{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .prog .dots{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;}
   .prog .dots span{height:10px;border-radius:2px;background:var(--surface-sunk);border:1px solid var(--border);}
   .prog .dots span.on{background:var(--b5);border-color:var(--b5);}
   .prog .lbl{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;
@@ -104,7 +104,7 @@
   .chart svg{display:block;width:100%;height:auto;}
   .chart text{font-family:'IBM Plex Mono',monospace;fill:var(--muted);}
   .chart .wl{fill:var(--ink);font-weight:600;}
-  table.wn td,table.wn th{padding:6px 6px;}
+  table.wn td,table.wn th{padding:6px 4px;}
   table.wn td.nm{white-space:normal;}
 
   .method{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--b5);
@@ -188,7 +188,7 @@
       <p class="so" id="e2so"></p>
       <div class="ol cb" id="outlook"></div>
       <div class="legend">
-        <span><i style="background:var(--b4)"></i>Chance of being champion on 27/12</span>
+        <span><i style="background:var(--b4)"></i>Chance of being champion on <span id="cbEnd"></span></span>
       </div>
       <p class="src" id="e2src"></p>
     </section>
@@ -222,7 +222,7 @@
 </div>
 
 <script src="data.js?v=3feffbfc"></script>
-<script src="data-winter-2027.js?v=6dd248bb"></script>
+<script src="data-winter-2027.js?v=15624e1d"></script>
 <script>
 (function(){
   const W = WINTER_2027, BEST = W.countBest, TOTAL = W.dates.length;
@@ -263,8 +263,11 @@
   const final = left === 0;
   $('kicker').innerHTML = `Mates Playing Golf &middot; 2027 season &middot; ` +
     (final ? 'Final report' : `Status report after round ${played}`);
-  $('lead').textContent = `Seven Sundays at ${W.course}, ${W.dates[0]} to ${W.dates[TOTAL-1]}. ` +
+  const WORDS = ['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
+  const nSun = (WORDS[TOTAL] || TOTAL) + ' Sundays';
+  $('lead').textContent = `${nSun[0].toUpperCase() + nSun.slice(1)} at ${W.course}, ${W.dates[0]} to ${W.dates[TOTAL-1]}. ` +
     `The champion is the player with the highest total from their best ${BEST} Stableford scores.`;
+  $('dots').style.gridTemplateColumns = `repeat(${TOTAL},1fr)`;
   $('dots').innerHTML = W.dates.map((d,i) => `<span class="${slot[i] ? 'on' : ''}" title="${d}"></span>`).join('');
   $('pFirst').textContent = dm(W.dates[0]);
   $('pMid').textContent = `${played} of ${TOTAL} played`;
@@ -361,6 +364,7 @@
     ? `All rounds are in, so the crystal ball has nothing left to guess: <b>${esc(list(leaders.map(p => p.name)))}</b> ${leaders.length > 1 ? 'share the title' : 'is champion'} on ${lead.total}.`
     : `<b>${esc(fav.name)}</b> is the favourite at ${pct(fav.chance)} to be champion.` +
       (dark ? ` Dark horse: <b>${esc(dark.name)}</b> (${pct(dark.chance)}), only ${dark.posTxt} today.` : '');
+  $('cbEnd').textContent = W.dates[TOTAL-1];
   const maxC = Math.max(...cb.map(p => p.chance), 1);
   $('outlook').innerHTML = final ? '' : cb.map(p => {
     const lab = p === fav && !final ? '<span class="lab fav">Favourite</span>'
@@ -379,26 +383,32 @@
   /* ---------- Exhibit 3 ---------- */
   const all = rounds.flatMap(r => r.rows.map(x => x[2]));
   const lo = Math.floor((Math.min(...all) - 2) / 5) * 5, hi = Math.ceil((Math.max(...all) + 2) / 5) * 5;
-  const Wd = 640, L = 64, R = 20, T = 18, RH = 36, H = T + RH * TOTAL + 26;
+  // one row per round PLAYED, then a single row for the Sundays still to come, so the chart
+  // stays readable on a phone however long the season is
+  const rowsC = slot.map((r,i) => ({r, i})).filter(o => o.r || o.i < lastSlot);
+  const toCome = TOTAL - 1 - lastSlot;
+  const Wd = 420, L = 70, R = 14, T = 18, RH = 34, H = T + RH * (rowsC.length + (toCome ? 1 : 0)) + 26;
   const x = v => L + (v - lo) / (hi - lo) * (Wd - L - R);
   let s = `<svg viewBox="0 0 ${Wd} ${H}" role="img" aria-label="Points scored by every player in each round">`;
   for (let v = lo; v <= hi; v += 5)
     s += `<line x1="${x(v)}" x2="${x(v)}" y1="${T-6}" y2="${H-22}" stroke="var(--hairline)"/>` +
-         `<text x="${x(v)}" y="${H-6}" font-size="11" text-anchor="middle">${v}</text>`;
-  W.dates.forEach((d,i) => {
-    const y = T + RH * i + RH/2;
-    s += `<text x="4" y="${y+4}" font-size="11">R${i+1} ${dm(d)}</text>`;
-    const r = slot[i];
-    if (!r) { s += `<text x="${x(lo)+6}" y="${y+4}" font-size="11" font-style="italic">${gapTxt(i)}</text>`; return; }
+         `<text x="${x(v)}" y="${H-6}" font-size="12" text-anchor="middle">${v}</text>`;
+  if (toCome) { const y = T + RH * rowsC.length + RH/2;
+    s += `<text x="4" y="${y+4}" font-size="12">R${lastSlot+2}${toCome > 1 ? '-R' + TOTAL : ''}</text>` +
+         `<text x="${L+4}" y="${y+4}" font-size="12" font-style="italic">${toCome} to play, ${dm(W.dates[lastSlot+1])} to ${dm(W.dates[TOTAL-1])}</text>`; }
+  rowsC.forEach(({r, i}, row) => {
+    const d = W.dates[i], y = T + RH * row + RH/2;
+    s += `<text x="4" y="${y+4}" font-size="12">R${i+1} ${dm(d)}</text>`;
+    if (!r) { s += `<text x="${L+4}" y="${y+4}" font-size="12" font-style="italic">${gapTxt(i)}</text>`; return; }
     const win = Math.max(...r.rows.map(z => z[2])), seen = {};
     r.rows.slice().sort((a,b) => a[2] - b[2]).forEach(([n,,v]) => {
-      const k = seen[v] = (seen[v] || 0) + 1, dy = (k % 2 ? 1 : -1) * Math.floor(k/2) * 7;
-      s += `<circle cx="${x(v)}" cy="${y+dy}" r="5.5" fill="${v === win ? 'var(--b5)' : 'var(--b3)'}" stroke="var(--surface)" stroke-width="1.2"><title>${esc(n)} ${v}</title></circle>`;
+      const k = seen[v] = (seen[v] || 0) + 1, dy = (k % 2 ? 1 : -1) * Math.floor(k/2) * 8;
+      s += `<circle cx="${x(v)}" cy="${y+dy}" r="6" fill="${v === win ? 'var(--b5)' : 'var(--b3)'}" stroke="var(--surface)" stroke-width="1.2"><title>${esc(n)} ${v}</title></circle>`;
     });
     const av = sum(r.rows.map(z => z[2])) / r.rows.length;
     s += `<line x1="${x(av)}" x2="${x(av)}" y1="${y-12}" y2="${y+12}" stroke="var(--ink)" stroke-width="2"/>`;
     const wn = r.rows.filter(z => z[2] === win).map(z => z[0].split(' ')[0]);
-    s += `<text class="wl" x="${Math.min(x(win)+9, Wd-R)}" y="${y-8}" font-size="11" text-anchor="${x(win) > Wd-150 ? 'end' : 'start'}">${esc(wn.join(', '))} ${win}</text>`;
+    s += `<text class="wl" x="${x(win) > Wd-110 ? x(win)-9 : x(win)+9}" y="${y-8}" font-size="12" text-anchor="${x(win) > Wd-110 ? 'end' : 'start'}">${esc(wn.join(', '))} ${win}</text>`;
   });
   $('chart').innerHTML = s + `</svg><div class="legend" style="padding:4px 6px 2px"><span><i style="background:var(--b5);border-radius:50%"></i>round winner</span><span><i style="background:var(--b3);border-radius:50%"></i>other players</span><span><i style="background:var(--ink);width:3px"></i>field average</span></div>`;
   const sc = rounds.map(r => r.rows.map(z => z[2]));
@@ -415,7 +425,7 @@
 
   /* ---------- Exhibit 4 ---------- */
   $('mRule').innerHTML = `<b>How that is applied.</b> A player's total is the sum of their best ${BEST} round scores. ` +
-    `Anyone who plays ${BEST} rounds or fewer counts all of them. Anyone who plays all ${TOTAL} has their lowest score dropped ` +
+    `Anyone who plays ${BEST} rounds or fewer counts all of them. Anyone who plays more than ${BEST} has only their best ${BEST} counted; the rest drop ` +
     `(shown grey in Exhibit 1). The winner is decided after the last round on ${W.dates[TOTAL-1]}.`;
   $('mWhere').innerHTML = `<b>Rounds.</b> ${TOTAL} Sundays: ${W.dates.join(', ')}.`;
 })();

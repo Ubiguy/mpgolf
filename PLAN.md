@@ -57,6 +57,7 @@ Basharat 21, Raz 20, Shufqat 18.
 | 11 | Shazad Hussain | – | 22 | 22 | |
 | 12 | Basharat Ali | – | 21 | 21 | |
 
+Season extended to 12 Sundays (to 31/01/2027) on 22/11/2026; totals unchanged.
 KPIs: leader 61 (Sid Amin); gap 1st to 2nd = 61 − 60 = 1; best single round 37 (Tariq Javaid, 15/11/2026);
 players 12. Round winners: R1 Tariq Javaid 37, R2 Guftar Hussain 31. No round dropped yet (2 of 7 played).
 

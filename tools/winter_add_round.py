@@ -8,7 +8,7 @@ Each player is "Name Handicap Points", as Golf GameBook shows them (Stableford N
 The page recalculates itself from the file: nothing else needs editing.
 
 The round is placed in date order, so a late or skipped Sunday still lands under the right date.
-Guards: the date must be one of the seven winter Sundays and not already entered; points 0-60;
+Guards: the date must be one of the winter Sundays listed in the file and not already entered; points 0-60;
 handicap 0-54; no player twice in a round; a name never seen before in the winter or in data.js
 is refused unless passed with --new (so a typo cannot split one player into two).
 Known GameBook spellings are mapped: "Imran K T" -> "Imran K", "Basharat2 Ali" -> "Basharat Ali".
