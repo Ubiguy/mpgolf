@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Wike Ridge flyover</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--g:#0f3d2a;--g2:#155c3e;--ink:#f3f6f2;--acc:#f2c230;--mut:#b9c9bf}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font:16px/1.45 "Schibsted Grotesk",system-ui,sans-serif;color:var(--ink);background:#0b1f16}
+#map{position:fixed;inset:0}
+.top{position:fixed;top:12px;left:12px;right:12px;display:flex;gap:8px;align-items:center;z-index:2}
+.title{background:rgba(15,61,42,.92);padding:10px 14px;border-radius:12px;font-weight:700;font-size:18px}
+.title small{display:block;font-weight:400;font-size:13px;color:var(--mut)}
+.tabs{margin-left:auto;display:flex;gap:6px}
+.tab{min-width:56px;height:48px;border:0;border-radius:12px;background:rgba(15,61,42,.92);color:var(--ink);font:700 18px inherit;font-family:inherit;cursor:pointer}
+.tab.on{background:var(--acc);color:#1b1b1b}
+.sheet{position:fixed;left:12px;right:12px;bottom:12px;z-index:2;background:rgba(15,61,42,.95);border-radius:16px;padding:14px;max-width:520px;margin:0 auto}
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.stat b{display:block;font-size:24px;line-height:1.1}
+.stat span{font-size:13px;color:var(--mut)}
+.step{font-size:16px;margin:0 0 10px;color:var(--ink)}
+.step em{font-style:normal;color:var(--acc);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+button.b{flex:1 1 auto;height:48px;border:0;border-radius:12px;font:600 16px inherit;font-family:inherit;cursor:pointer;padding:0 14px}
+.b.main{background:var(--acc);color:#1b1b1b}
+.b.alt{background:var(--g2);color:var(--ink)}
+.b:disabled{opacity:.45;cursor:default}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.note{font-size:13px;color:var(--mut);margin-top:8px}
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#000c;padding:8px 14px;border-radius:10px;font-size:14px;z-index:3;display:none}
+@media(max-width:600px){.title{font-size:16px}.tab{min-width:48px}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="top">
+  <div class="title">Wike Ridge<small>Leeds Golf Centre</small></div>
+  <div class="tabs"><button class="tab on" data-h="15">15</button><button class="tab" data-h="17">17</button></div>
+</div>
+<div class="sheet">
+  <div class="stats">
+    <div class="stat"><b id="card">–</b><span>Scorecard (yellow / red)</span></div>
+    <div class="stat"><b id="meas">–</b><span>Measured on map</span></div>
+  </div>
+  <p class="step" id="step"></p>
+  <div class="row">
+    <button class="b main" id="fly" disabled>▶ Fly the hole</button>
+    <button class="b alt" id="undo">Undo point</button>
+    <button class="b alt" id="reset">Reset</button>
+    <button class="b alt" id="copy">Copy points</button>
+  </div>
+  <p class="note">Tap points in order: tee, then any bend in the fairway, then the green. Saved on this device.</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+{
+const HOLES={15:{y:408,r:385},17:{y:513,r:461}};
+const CENTRE=[-1.4938,53.8731];
+let hole=15, flying=false;
+const pts={15:[],17:[]};
+try{const s=JSON.parse(localStorage.getItem('wikePts')||'{}');for(const k in s)pts[k]=s[k];}catch(e){}
+const save=()=>{try{localStorage.setItem('wikePts',JSON.stringify(pts))}catch(e){}};
+
+const map=new maplibregl.Map({
+  container:'map',center:CENTRE,zoom:15.6,pitch:0,maxPitch:80,
+  style:{version:8,
+    sources:{
+      sat:{type:'raster',tileSize:256,maxzoom:19,
+        tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        attribution:'Imagery © Esri, Maxar, Earthstar Geographics'},
+      dem:{type:'raster-dem',encoding:'terrarium',tileSize:256,maxzoom:15,
+        tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        attribution:'Terrain: Mapzen / AWS'}
+    },
+    layers:[{id:'bg',type:'background',paint:{'background-color':'#7fb3d5'}},{id:'sat',type:'raster',source:'sat'}]
+  }
+});
+map.addControl(new maplibregl.NavigationControl({visualizePitch:true}),'top-right');
+
+const R=6371000, rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+function dist(a,b){const dl=rad(b[1]-a[1]),dn=rad(b[0]-a[0]);const h=Math.sin(dl/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+function brg(a,b){const y=Math.sin(rad(b[0]-a[0]))*Math.cos(rad(b[1]));const x=Math.cos(rad(a[1]))*Math.sin(rad(b[1]))-Math.sin(rad(a[1]))*Math.cos(rad(b[1]))*Math.cos(rad(b[0]-a[0]));return (deg(Math.atan2(y,x))+360)%360;}
+const yds=m=>Math.round(m*1.09361);
+function len(p){let t=0;for(let i=1;i<p.length;i++)t+=dist(p[i-1],p[i]);return t;}
+function along(p,d){for(let i=1;i<p.length;i++){const s=dist(p[i-1],p[i]);if(d<=s||i===p.length-1){const f=s?Math.min(d/s,1):0;return [p[i-1][0]+(p[i][0]-p[i-1][0])*f,p[i-1][1]+(p[i][1]-p[i-1][1])*f];}d-=s;}return p[p.length-1];}
+
+function geo(){
+  const p=pts[hole];
+  return {line:{type:'FeatureCollection',features:p.length>1?[{type:'Feature',geometry:{type:'LineString',coordinates:p}}]:[]},
+    dots:{type:'FeatureCollection',features:p.map((c,i)=>({type:'Feature',properties:{l:i===0?'T':(i===p.length-1&&p.length>1?'G':String(i))},geometry:{type:'Point',coordinates:c}}))}};
+}
+function render(){
+  const g=geo();
+  if(map.getSource('line')){map.getSource('line').setData(g.line);map.getSource('dots').setData(g.dots);}
+  const h=HOLES[hole],p=pts[hole];
+  document.getElementById('card').textContent=h.y+' / '+h.r+' yds';
+  document.getElementById('meas').textContent=p.length>1?yds(len(p))+' yds':'–';
+  const s=document.getElementById('step');
+  s.innerHTML=p.length===0?'Tap the <em>tee</em> for hole '+hole+'.':p.length===1?'Now tap any <em>bend</em>, or the <em>green</em>.':'Tap more points, or press <em>Fly</em>. Last point = green.';
+  document.getElementById('fly').disabled=p.length<2;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',+t.dataset.h===hole));
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.i);toast.i=setTimeout(()=>t.style.display='none',2200);}
+
+map.on('load',()=>{
+  map.setTerrain({source:'dem',exaggeration:2});
+  const g=geo();
+  map.addSource('line',{type:'geojson',data:g.line});
+  map.addSource('dots',{type:'geojson',data:g.dots});
+  map.addLayer({id:'line',type:'line',source:'line',paint:{'line-color':'#f2c230','line-width':4,'line-dasharray':[2,1.5]}});
+  map.addLayer({id:'dots',type:'circle',source:'dots',paint:{'circle-radius':11,'circle-color':'#0f3d2a','circle-stroke-color':'#f2c230','circle-stroke-width':3}});
+  map.addLayer({id:'lbl',type:'symbol',source:'dots',layout:{'text-field':['get','l'],'text-size':13,'text-allow-overlap':true},paint:{'text-color':'#fff'}});
+  render();
+  fitHole();
+});
+map.on('error',e=>{if(!render.warned){render.warned=1;toast('Some map tiles failed to load');}});
+
+map.on('click',e=>{if(flying)return;pts[hole].push([+e.lngLat.lng.toFixed(6),+e.lngLat.lat.toFixed(6)]);save();render();});
+
+function fitHole(){
+  const p=pts[hole];if(p.length<2){map.easeTo({center:p[0]||CENTRE,zoom:16,pitch:0,bearing:0});return;}
+  const b=new maplibregl.LngLatBounds(p[0],p[0]);p.forEach(c=>b.extend(c));
+  map.fitBounds(b,{padding:{top:90,bottom:230,left:40,right:40},bearing:brg(p[0],p[p.length-1]),pitch:45,duration:900});
+}
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{if(flying)return;hole=+t.dataset.h;render();fitHole();}));
+document.getElementById('undo').addEventListener('click',()=>{if(flying)return;pts[hole].pop();save();render();});
+document.getElementById('reset').addEventListener('click',()=>{if(flying)return;pts[hole]=[];save();render();fitHole();});
+document.getElementById('copy').addEventListener('click',async()=>{
+  const txt=JSON.stringify({hole15:pts[15],hole17:pts[17]});
+  try{await navigator.clipboard.writeText(txt);toast('Copied — paste it to Claude');}catch(e){toast('Copy blocked: '+txt.slice(0,40)+'…');}
+});
+
+document.getElementById('fly').addEventListener('click',()=>{
+  const p=pts[hole];if(p.length<2||flying)return;
+  flying=true;document.getElementById('fly').textContent='Flying…';
+  const L=len(p),green=p[p.length-1];
+  const T1=Math.max(9000,L*30),T2=7000;let start=null;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){map.easeTo({center:green,zoom:18,pitch:60,bearing:brg(p[0],green),duration:1500});setTimeout(done,1600);return;}
+  const endB=brg(p[p.length-2],green);
+  function frame(t){
+    if(!start)start=t;const e=t-start;
+    if(e<T1){
+      const f=e/T1,k=f<.5?2*f*f:1-(-2*f+2)**2/2;
+      const d=k*L,c=along(p,d),look=along(p,Math.min(d+40,L));
+      const b=d+5<L?brg(c,look):endB;
+      map.jumpTo({center:c,zoom:17.6+k*0.8,pitch:68-k*8,bearing:b});
+      requestAnimationFrame(frame);
+    }else if(e<T1+T2){
+      const f=(e-T1)/T2;
+      map.jumpTo({center:green,zoom:18.4,pitch:60,bearing:endB+f*360});
+      requestAnimationFrame(frame);
+    }else done();
+  }
+  requestAnimationFrame(frame);
+  function done(){flying=false;document.getElementById('fly').textContent='▶ Fly the hole';fitHole();}
+});
+}
+</script>
+</body>
+</html>
